@@ -31,8 +31,10 @@ def background_task(config, task_id):
     """在后台线程中执行的实际任务函数"""
     global current_task_id
     try:
-        # todo 在这里执行核心程序
-        category_integration_master(config.get('cid'), site=config.get('site'))
+        confList = config.get('data')
+        for conf in confList:
+            # todo 在这里执行核心程序
+            category_integration_master(conf.get('cid'), site=conf.get('site'))
     except Exception as e:
         print(f"任务执行出错: {e}")
     finally:
@@ -49,10 +51,17 @@ def start_task():
     config = request.json
     if not config:
         return jsonify({"success": False, "error": "缺少配置参数"}), 400
-    if 'site' not in config:
-        return jsonify({"success": False, "error": "缺少重要参数 site"}), 400
-    if 'cid' not in config:
-        return jsonify({"success": False, "error": "缺少重要参数 cid"}), 400
+    if 'data' not in config:
+        return jsonify({"success": False, "error": "缺少重要参数 data"}), 400
+    if not type(config.get('data')) is list:
+        return jsonify({"success": False, "error": "参数错误"}), 400
+    for i in config.get('data'):
+        if not type(i) is dict:
+            return jsonify({"success": False, "error": "参数错误"}), 400
+        if 'site' not in i:
+            return jsonify({"success": False, "error": "参数错误 site"}), 400
+        if 'cid' not in i:
+            return jsonify({"success": False, "error": "参数错误 cid"}), 400
 
     # todo 关键检查：如果有任务ID存在，说明有任务正在运行
     if current_task_id is not None:
