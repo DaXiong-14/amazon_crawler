@@ -9,7 +9,7 @@ import json
 import os
 import requests
 from io import BytesIO
-from Baidu_Text_transAPI import BaiduTranslation
+from tool.Baidu_Text_transAPI import BaiduTranslation
 from openpyxl.styles import colors
 from openpyxl.styles import Font
 
