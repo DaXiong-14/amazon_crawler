@@ -7,6 +7,7 @@ from queue import Queue
 from threading import Thread
 import uuid
 
+from config.config import PORT
 from src.queryData import queryMaster
 
 
@@ -46,7 +47,6 @@ def task_worker():
             logger.info(f"开始执行任务: {task_data}")
             if task_data.get('p') == 'cn':
                 queryMaster(task_data['cid'], task_data['site'], task_data['p'])
-
 
             logger.info(f"任务完成: {task_data}")
 
@@ -101,4 +101,4 @@ def get_status():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(host='0.0.0.0', port=PORT, debug=True)

@@ -146,11 +146,12 @@ class SeleniumPool:
             cookies = driver.get_cookies()
             page_source = driver.page_source.encode('utf-8').strip()
 
-            if 'Request was throttled' in page_source:
+            if "Request was throttled" in driver.page_source:
                 driver.refresh()
                 driver.implicitly_wait(20)
                 logger.info("请求被限制，已重新刷新！")
-            if '<h2>Tut uns Leid!' in driver.page_source:
+
+            if "<h2>Tut uns Leid!" in driver.page_source:
                 logger.warning("请求被限制，准备重新访问站点主页！")
                 driver.get( _get_site_url(self.site))
                 driver.implicitly_wait(20)
@@ -352,7 +353,7 @@ def _get_browser_options():
     options = Options()
 
     # 性能优化选项
-    options.add_argument("--headless=new")
+    # options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
@@ -473,6 +474,7 @@ def _setup_postal_code(driver, site="US"):
         logger.error(f"邮政编码设置失败: {str(e)}")
 
 
+
 def _get_postal_code(site):
     """根据国家生成随机邮编"""
     us_zip_codes = [
@@ -575,6 +577,7 @@ def get_amazon_product(baseurl, cookies=None, site=None):
     except Exception as e:
         logger.error(f"请求失败: {str(e)}")
         return None
+
 
 
 def _selenium_amazon_product(baseurl, site=None):
@@ -974,3 +977,13 @@ class ThreadSafeConstant:
         with self._lock:
             self._cookies = new_cookies
 
+
+def _get_marketId(site):
+    dictID = {
+        'US': 1,
+        'UK': 3,
+        'DE': 4,
+        'FR': 5,
+    }
+
+    return dictID.get(site)
