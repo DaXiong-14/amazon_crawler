@@ -1,4 +1,3 @@
-# C:/Users/PC/Desktop/bsr_crawler/tool/pipeline.py
 import json
 import logging
 from typing import Any
@@ -7,17 +6,20 @@ import pymysql
 from pymysql import Error
 
 from contextlib import contextmanager
-from mysql.connector import Error, pooling
+from mysql.connector import Error
+
+from config.config import db_config
 
 logger = logging.getLogger(__name__)
 
-def toJson(data: List[Dict[str, Any]], filename: str):
+def toJson(data: List[Dict[str, Any]], filename: str, wb="a"):
     """
     将数据写入 JSON 文件
     :param data: 数据列表
     :param filename: 文件名
+    :param wb: 文件保存方式
     """
-    f = open(filename, 'a', encoding='utf-8')
+    f = open(filename, wb, encoding='utf-8')
     for item in data:
         try:
             json_str = json.dumps(item, ensure_ascii=False)
@@ -181,14 +183,14 @@ class MySQLPipeline:
 
         logger.info(f"数据处理完成，共处理 {total_records} 条记录")
 
-    def _process_batch(self, table_name: str, batch: List[Dict], primary_key: str):
+    def _process_batch(self, table_name: str, batch: List[Dict], primary_key: str = 'asin'):
         """
-        处理单批次数据
+        处理单批次数据（根据asin更新规则）
 
         参数:
             table_name: 表名
             batch: 当前批次数据
-            primary_key: 主键字段名
+            primary_key: 主键字段名，默认为'asin'
         """
         with self.get_connection() as conn:
             with conn.cursor() as cursor:
@@ -196,40 +198,50 @@ class MySQLPipeline:
                     # 开始事务
                     conn.begin()
 
-                    # 构建INSERT ON DUPLICATE KEY UPDATE语句
                     if not batch:
                         return
 
                     # 获取所有字段名（排除主键）
-                    fields = [k for k in batch[0].keys() if k != primary_key]
+                    all_fields = [k for k in batch[0].keys() if k != primary_key]
 
-                    # 构建SQL
-                    placeholders = ', '.join(['%s'] * len(fields))
-                    update_fields = ', '.join([f"`{f}`=VALUES(`{f}`)" for f in fields])
+                    # 构建动态的ON DUPLICATE KEY UPDATE部分
+                    update_clauses = ["`rank`=VALUES(`rank`)"]  # rank必须更新
+
+                    for field in all_fields:
+                        if field != 'rank':  # 已处理rank字段
+                            # 对于其他字段，只有当新值不为NULL时才更新
+                            update_clauses.append(
+                                f"`{field}`=IF(VALUES(`{field}`) IS NOT NULL, VALUES(`{field}`), `{field}`)")
+
+                    update_clause = ', '.join(update_clauses)
+
+                    # 构建完整的INSERT ... ON DUPLICATE KEY UPDATE语句
+                    placeholders = ', '.join(['%s'] * len(all_fields))
 
                     insert_sql = f"""
-                    INSERT INTO {table_name} (`{primary_key}`, {', '.join([f"`{f}`" for f in fields])})
+                    INSERT INTO {table_name} (`{primary_key}`, {', '.join([f"`{f}`" for f in all_fields])})
                     VALUES (%s, {placeholders})
-                    ON DUPLICATE KEY UPDATE {update_fields}
+                    ON DUPLICATE KEY UPDATE {update_clause}
                     """
 
                     # 准备批量数据
                     batch_values = []
                     for item in batch:
                         values = [item.get(primary_key)]
-                        values.extend([item.get(f) for f in fields])
+                        values.extend([item.get(f) for f in all_fields])
                         batch_values.append(values)
 
                     # 执行批量操作
                     cursor.executemany(insert_sql, batch_values)
                     conn.commit()
 
-                    logger.info(f"成功处理批次: {len(batch)} 条记录")
+                    logger.info(f"成功处理批次: {len(batch)} 条记录（智能更新模式）")
 
                 except Error as e:
                     conn.rollback()
                     logger.error(f"处理批次失败: {e}")
                     raise
+
 
     def execute_query(self, query: str, params: Optional[tuple] = None):
         """

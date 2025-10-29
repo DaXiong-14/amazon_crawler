@@ -251,6 +251,7 @@ class AmazonExcelExporter:
         businessAddress = ""
         try:
             seller_dto = item.get('sellerDto')
+            print(item)
             if not seller_dto :
                 seller_dto = item.get("seller_dto")
             if seller_dto:
@@ -293,7 +294,7 @@ class AmazonExcelExporter:
 
         # todo 同款信息
         try:
-            similarList = item.get("similarList")
+            similarList = json.loads(item.get("similarList"))
             if similarList:
                 # 按评分排序
                 sorted_data = sorted(similarList,
@@ -345,11 +346,10 @@ class AmazonExcelExporter:
         self.ws.cell(row=row_idx, column=22, value=Product_information)
 
         # todo 阿里搜图
-        ai_items = item.get("aliexpress", [])
+        ai_items = json.loads(item.get("aliexpress", []))
         if ai_items:
-
             # 图一
-            image_1 = ai_items[0].get("image_src", "")
+            image_1 = ai_items[0].get("imageUrl", "")
             try:
                 img_data = self.download_image(image_1)
                 img = Image(img_data)
@@ -362,7 +362,7 @@ class AmazonExcelExporter:
                 logger.error(f"插入图1失败: {e}")
 
             # 图二
-            image_2 = ai_items[1].get("image_src", "")
+            image_2 = ai_items[1].get("imageUrl", "")
             try:
                 img_data = self.download_image(image_2)
                 img = Image(img_data)
@@ -375,7 +375,7 @@ class AmazonExcelExporter:
                 logger.error(f"插入图2失败: {e}")
 
             # 图三
-            image_3 = ai_items[2].get("image_src", "")
+            image_3 = ai_items[2].get("imageUrl", "")
             try:
                 img_data = self.download_image(image_3)
                 img = Image(img_data)
@@ -392,7 +392,7 @@ class AmazonExcelExporter:
             self.ws.cell(row=row_idx, column=26, value=price)
 
             # 采购商(1688)
-            purchaser = "\n".join([k["enterprise"] for k in ai_items[:5]])
+            purchaser = "\n".join([k["companyName"] for k in ai_items[:5]])
             self.ws.cell(row=row_idx, column=27, value=purchaser)
 
             # 供应商1688链接
@@ -444,18 +444,3 @@ class AmazonExcelExporter:
             self.wb.close()
             self.wb = None
             self.ws = None
-
-
-# if __name__ == '__main__':
-#     with open("../data/amazon_DE_2025-10-25_12-38-26.json", 'r', encoding='utf-8') as f:
-#         f_text = f.read()
-#         ex = AmazonExcelExporter(filename="df.xlsx")
-#         ex.create_worksheet("产品数据")
-#         f_json_list = f_text.split('\n')
-#         for f_json in f_json_list:
-#             try:
-#                 ex.add_product_data(json.loads(f_json))
-#             except:
-#                 continue
-#         ex.save()
-#         ex.close()

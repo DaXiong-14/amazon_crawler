@@ -125,28 +125,49 @@ class SeleniumPool:
             driver.execute_cdp_cmd('Network.enable', {})
             driver.execute_cdp_cmd('Network.setBlockedURLs', {
                 'urls': [
-                    '*.jpg', '*.png', '*.gif',  # 图片
-                    '*.css',  # CSS
-                    # '*.js'  # JavaScript
+                    '*.jpg', '*.jpeg', '*.png', '*.gif', '*.webp', '*.svg', '*.ico',
+                    '*.css', '*.less', '*.scss',
+                    '*.woff', '*.woff2', '*.ttf', '*.eot',
+                    '*.mp4', '*.webm', '*.ogg', '*.mp3', '*.wav',
+                    '*.js',
+                    '*.json', '*.xml'
                 ]
             })
+
             # 访问页面
             driver.get(url)
             driver.implicitly_wait(20)
 
             # # 处理反爬
-            _handle_browser_popups(driver, _get_site_url(self.site))
-            driver.implicitly_wait(20)
+            # _handle_browser_popups(driver, _get_site_url(self.site))
+            # driver.implicitly_wait(20)
 
             # 获取页面数据
             cookies = driver.get_cookies()
             page_source = driver.page_source.encode('utf-8').strip()
 
+            if 'Request was throttled' in page_source:
+                driver.refresh()
+                driver.implicitly_wait(20)
+                logger.info("请求被限制，已重新刷新！")
+            if '<h2>Tut uns Leid!' in driver.page_source:
+                logger.warning("请求被限制，准备重新访问站点主页！")
+                driver.get( _get_site_url(self.site))
+                driver.implicitly_wait(20)
+                logger.info("请求被限制，已重新访问站点主页！")
+                time.sleep(20)
+                # todo 回调
+                return self.get_page_source(url=url, body=body)
+
             logger.info("浏览器驱动成功获取页面内容")
 
             # 恢复网络拦截 - 关键步骤
+            driver.execute_cdp_cmd('Network.setBlockedURLs', {
+                'urls': []
+            })
             driver.execute_cdp_cmd('Network.disable', {})
             if not body is None:
+                time.sleep(random.uniform(1,2))
                 similarList = self.get_similar_products(driver, body.get('image'), max_retries=3)
                 return {
                     'cookies': cookies,
@@ -172,6 +193,17 @@ class SeleniumPool:
             :param max_retries: 最大重试次数
         """
         try:
+            # todo 启用网络拦截
+            driver.execute_cdp_cmd('Network.enable', {})
+            driver.execute_cdp_cmd('Network.setBlockedURLs', {
+                'urls': [
+                    '*.gif', '*.webp', '*.svg', '*.ico',
+                    '*.css', '*.less', '*.scss',
+                    '*.woff', '*.woff2', '*.ttf', '*.eot',
+                    '*.mp4', '*.webm', '*.ogg', '*.mp3', '*.wav'
+                    '*.xml'
+                ]
+            })
             base_url = f'{_get_site_url(self.site)}/stylesnap?q={quote(imageUrl)}'
             # todo 钩子提前注入，收集 url+body
             with open(os.path.join(os.getcwd(), 'js\\selenium_hook.js'), 'r', encoding='utf-8') as f:
@@ -180,10 +212,21 @@ class SeleniumPool:
             # todo 访问页面
             logger.info(f'🚀 访问页面: {base_url}')
             driver.get(base_url)
-            # todo 处理可能的弹窗
-            _handle_browser_popups(driver, _get_site_url(self.site))
             # todo 时间等待
             driver.implicitly_wait(20)
+            # todo 处理可能的弹窗
+            if 'Request was throttled' in driver.page_source:
+                driver.refresh()
+                driver.implicitly_wait(20)
+                logger.info("请求被限制，已重新刷新！")
+            if '<h2>Tut uns Leid!' in driver.page_source:
+                logger.warning("请求被限制，准备重新访问站点主页！")
+                driver.get(_get_site_url(self.site))
+                driver.implicitly_wait(20)
+                logger.info("请求被限制，已重新访问站点主页！")
+                time.sleep(20)
+                # todo 回调
+                return self.get_similar_products(driver, imageUrl, max_retries)
             # todo 轮询等待拦截数据
             retry_count = 0
             while retry_count < max_retries:
@@ -198,6 +241,10 @@ class SeleniumPool:
                             try:
                                 json.loads(intercepted['body'])
                                 logger.info('✨ 拦截完成!')
+                                # 超时后执行JS停止加载
+                                driver.execute_script("window.stop()")
+                                # 恢复网络拦截 - 关键步骤
+                                driver.execute_cdp_cmd('Network.disable', {})
                                 return process_intercepted_data(intercepted['body'])
                             except Exception as e:
                                 logger.error(f'❌ 响应数据不是Json: {e}')
@@ -212,9 +259,19 @@ class SeleniumPool:
                 # todo 清空拦截数组，防止旧数据影响
                 driver.execute_script('window._interceptedStylesnapArr = [];')
             logger.info('⏹️ 多次刷新后仍未拦截到 JSON 数据，停止加载')
+            # 恢复网络拦截 - 关键步骤
+            driver.execute_cdp_cmd('Network.setBlockedURLs', {
+                'urls': []
+            })
+            driver.execute_cdp_cmd('Network.disable', {})
             return []
         except Exception as e:
             logger.error(f'💥 执行过程中出错: {e}')
+            # 恢复网络拦截 - 关键步骤
+            driver.execute_cdp_cmd('Network.setBlockedURLs', {
+                'urls': []
+            })
+            driver.execute_cdp_cmd('Network.disable', {})
             return []
 
 
@@ -368,14 +425,15 @@ def _handle_browser_popups(driver, origin):
         # todo 回调
         _handle_browser_popups(driver, origin)
     try:
-        button = driver.find_element(By.CLASS_NAME, "a-button-text")
+        divBox = driver.find_element(By.CSS_SELECTOR, ".a-container.a-padding-double-large")
+        button = divBox.find_element(By.CLASS_NAME, "a-button-text")
         button.click()
         logger.info("成功处理机器人反爬!")
     except:
         pass
-    time.sleep(random.uniform(1, 3))
+    driver.implicitly_wait(20)
     try:
-        accept_button = wait.until(EC.element_to_be_clickable((By.ID, "sp-cc-accept")))
+        accept_button = driver.find_element(By.ID, "sp-cc-accept")
         accept_button.click()
         logger.info("成功点击Cookie同意按钮!")
     except:

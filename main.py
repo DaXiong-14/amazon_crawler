@@ -1,5 +1,5 @@
 # todo 项目启动类
-import json
+
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
@@ -8,6 +8,8 @@ from datetime import datetime
 
 import requests
 
+from config.config import flask_host
+from src.AliExpressCrawler import AliExpressCrawler
 from src.amazon_listing_crawler import crawl_search_results
 from src.amazon_product_extractor import get_product_details
 from tool.pipeline import toJson
@@ -122,7 +124,7 @@ def selection_core(cid, site):
     """
     logger.info(f'开始抓取 {cid}，{site}, 选品数据.......')
     start_time = datetime.now()
-    pool = SeleniumPool(pool_size=12, site=site)
+    pool = SeleniumPool(pool_size=8, site=site)
     i_url = 'https://www.sellersprite.com/v2/competitor-lookup/nodes'
     params = {
         'marketId': 4,  # 4 德国站
@@ -163,7 +165,7 @@ def selection_core(cid, site):
     pool.close_all()
     # todo 调用存储管道
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    path = f'data\\selection\\amazon_{cid}_{site}_{current_time}.json'
+    path = f'temp\\selection\\amazon_{cid}_{site}_{current_time}.json'
     toJson(reItems, os.path.join(os.getcwd(), path))
 
     # todo 计算时间差
@@ -173,34 +175,60 @@ def selection_core(cid, site):
 
 
 
-def category_integration_start(site="US"):
+def category_integration_start(site="US", method='f'):
     """
     亚马逊 类目整合 爬虫启动方法
     :param site: 站点 默认美国
+    :param method: 执行方式 f 为 flask 交互 m为本地
     :return:
     """
     # todo 获取id 配置文件
     with open('config/categoryID.txt', 'r', encoding='utf-8') as f:
         ids = f.read().splitlines()
-    # todo 遍历 ids 列表
-    for c in ids:
-        # todo 调用类目整合主方法
-        if c:
-            category_id = c.split(',')
-            category_integration_master(category_id[0], site=category_id[1])
+
+    if method == 'm':
+        # todo 遍历 ids 列表
+        for c in ids:
+            # todo 调用类目整合主方法
+            if c:
+                category_id = c.split(',')
+                category_integration_master(category_id[0], site=category_id[1])
+
+    if method == 'f':
+        result_dict = {}
+        for line in ids:
+            if line:
+                cid, site = line.strip().split(',')
+                if site not in result_dict:
+                    result_dict[site] = []
+                result_dict[site].append({
+                    'cid': cid,
+                    'site': site
+                })
+
+        # todo 提交服务器
+        for k in result_dict.keys():
+            host = flask_host.get(k)
+            url = f'https://{host}:8080/api/crawler/cn'
+            response = requests.post(url, json=result_dict[k])
+            if response.status_code != 202:
+                logger.error(f'爬虫程序失败！{response.json().get('error')}')
+
+
+
 
 
 
 
 if __name__ == '__main__':
     # selection_start()
-    # category_integration_start()
+    category_integration_start()
     # _uc_amazon_product('https://www.amazon.de/s?rh=n%3A1981774031&fs=true&page=5')
     # _selenium_amazon_product('https://www.amazon.de')
     # a = AliExpressCrawler()
     # a.search_by_image('https://m.media-amazon.com/images/I/71leFiNSN9L._AC_SX679_.jpg')
-
-    print(json.dumps({'config':'1'}))
-
+    # queryMaster('1981665031', 'DE')
+    # aliexpress = AliExpressCrawler()
+    # aliexpress.search_by_image('https://m.media-amazon.com/images/I/41io100puXL._AC_SX679_.jpg')
 
 

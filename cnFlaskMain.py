@@ -7,14 +7,15 @@ import threading
 import uuid
 
 from src.amazon_category_integration_crawler import category_integration_master
-
+from config.config import flask_host
+import requests
 
 def setup_logging():
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s [%(levelname)s] %(name)s:%(lineno)d - %(message)s',
         handlers=[
-            logging.FileHandler(f'project.log', encoding='utf-8'),
+            logging.FileHandler(f'project_Flask.log', encoding='utf-8'),
             logging.StreamHandler()
         ]
     )
@@ -27,16 +28,34 @@ app = Flask(__name__)
 # todo 核心：用于跟踪当前任务的全局变量
 current_task_id = None
 
+
 def background_task(config, task_id):
     """在后台线程中执行的实际任务函数"""
     global current_task_id
     try:
         confList = config.get('data')
         for conf in confList:
-            # todo 在这里执行核心程序
-            category_integration_master(conf.get('cid'), site=conf.get('site'))
+            try:
+                # todo 在这里执行核心程序
+                category_integration_master(conf.get('cid'), site=conf.get('site'))
+                # todo 执行成功 向服务器发送 结果 进行下一步采集
+                reqJSON = {
+                    'cid': conf.get('cid'),
+                    'site': conf.get('site'),
+                    'p': 'cn'
+                }
+                # 提交服务器
+                url = f'https://{flask_host.get('master')}:8080/api/crawler/task'
+                req =requests.post(url, json=reqJSON)
+                if 'error' in req.json():
+                    raise Exception(req.json().get('error'))
+            except Exception as e:
+                logger.error(f"任务 {conf} 执行出错: {e}")
+                continue
+
+
     except Exception as e:
-        print(f"任务执行出错: {e}")
+        logger.error(f"任务执行出错: {e}")
     finally:
         # 任务完成，无论成功失败，都清空标记
         if current_task_id == task_id:

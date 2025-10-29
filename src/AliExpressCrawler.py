@@ -37,9 +37,8 @@ class AliExpressCrawler:
         self.logger.info(f"开始在1688搜索图片: {image_url}")
         ai_items = []
         try:
-            self.driver.get(
-                "https://aibuy.1688.com/landingpage?bizType=selectionTool&customerId=sellerspriteLP&lang=zh&currency=CNY"
-            )
+            searchUrl = "https://aibuy.1688.com/landingpage?bizType=selectionTool&customerId=sellerspriteLP&lang=zh&currency=CNY"
+            self.driver.get(searchUrl)
 
             # todo 处理可能的弹窗
             try:
@@ -78,9 +77,6 @@ class AliExpressCrawler:
                 EC.element_to_be_clickable((By.XPATH, '//div[@class="ant-modal-footer"]/span[contains(text(),"确定")]'))
             )
             searchButton.click()
-            self.driver.implicitly_wait(20)
-            time.sleep(random.uniform(0,1))
-            self.driver.refresh()
 
             # todo api 接口数据
             api_data = None
@@ -89,6 +85,13 @@ class AliExpressCrawler:
             retry_count = 0
 
             while retry_count < max_retries:
+                # 先清空拦截数据
+                self.driver.execute_script('window._interceptedStylesnapArr = [];')
+                self.logger.info('🔄 已清空拦截数组，准备捕获新请求数据')
+                while True:
+                    if self.driver.current_url != searchUrl:
+                        break
+                self.driver.refresh()
                 max_wait_time = 20
                 poll_interval = 0.5
                 waited = 0
@@ -101,6 +104,8 @@ class AliExpressCrawler:
                                 api_data = json.loads(intercepted['body'])
                                 self.logger.info('✨ 拦截完成!')
                                 reData = api_data['data']['result']['data']
+                                print(reData[0])
+                                time.sleep(80)
                                 self.close()
                                 return reData
                             except Exception as e:
@@ -112,9 +117,7 @@ class AliExpressCrawler:
                     waited += poll_interval
                 retry_count += 1
                 self.logger.info(f'⚠️ 超时：未拦截到 JSON 数据，刷新页面重试（第{retry_count}次）...')
-                self.driver.refresh()
-                # todo 清空拦截数组，防止旧数据影响
-                self.driver.execute_script('window._interceptedStylesnapArr = [];')
+
 
             self.logger.info('⏹️ 多次刷新后仍未拦截到 JSON 数据，停止加载')
             return []
@@ -133,4 +136,3 @@ class AliExpressCrawler:
                 self.logger.info("1688浏览器驱动已关闭")
         except Exception as e:
             self.logger.error(f"关闭1688浏览器驱动时出错: {e}")
-

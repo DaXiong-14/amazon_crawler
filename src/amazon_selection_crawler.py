@@ -82,7 +82,7 @@ def selection_master(conf: dict, reItems):
 
     return items
 
-def selection_slave(conf:dict, pool, items):
+def selection_slave(conf:dict, items, pool=None):
     # todo 5. 获取 token
     user = _read_user()
     token = export_token(user.get('username'), user.get('password'))
@@ -100,6 +100,10 @@ def selection_slave(conf:dict, pool, items):
     asinList = [i.get('asin') for i in newItems if i]
     finalItems = updataItems(newItems, asinList, token, conf, t=True)
     logger.info('第二次更新 items 完成, finalItems 数量: {}'.format(len(finalItems)))
+
+    if pool is None:
+        return finalItems
+
     processed_data = crawl_item_info(finalItems, pool, conf.get('site'), t=True)
 
     # todo 10. 合并亚马逊数据
@@ -188,7 +192,7 @@ def crawl_item_info(finalItems, pool , site, t):
                     imageUrl = item.get('imageUrl')
                 if imageUrl is not None:
                     futures.append(executor.submit(process_batch, item.get('asin'), imageUrl, site, pool, t))
-                    time.sleep(random.uniform(3,5))
+                    time.sleep(random.uniform(1,2))
         # 等待所有任务完成并处理异常
         for future in as_completed(futures):
             try:

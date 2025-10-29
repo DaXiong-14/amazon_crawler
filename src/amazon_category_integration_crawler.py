@@ -61,7 +61,7 @@ def category_integration_master(cid, site):
                 logger.info("已达到数据上限，停止提交新任务。")
                 break
             futures.append(executor.submit(process_batch_category, cid, page, pool))
-            time.sleep(random.uniform(2,5))
+            time.sleep(random.uniform(1,2))
         # 等待所有任务完成并处理异常
         for future in futures:
             try:
@@ -88,8 +88,8 @@ def category_integration_master(cid, site):
     logger.info(f'类目 {cid} 综合数据抓取完成！总用时: {time_diff.total_seconds()} 秒')
 
     # todo 下沉
-    fileJSON = f"data\\category_integration\\{cid}_{site}.json"
-    toJson(reItems, os.path.join(os.getcwd(), fileJSON))
+    # fileJSON = f"data\\category_integration\\{cid}_{site}.json"
+    # toJson(reItems, os.path.join(os.getcwd(), fileJSON))
 
     # todo MySQL 转存
     from config.config import db_config
@@ -154,7 +154,7 @@ def crawl_category_integration(cid, page, pool):
     soup = BeautifulSoup(pageSource, 'html.parser')
     items = []
     # todo 解析页面
-    itemBoxs = soup.find_all('div', {'role': 'listitem', "data-cel-widget": lambda x: x and x.startswith("search_result_")})
+    itemBoxs = soup.find_all('div', {'role': 'listitem', 'data-component-type': 's-search-result'})
     if not itemBoxs:
         logger.error('页面没有商品数据!')
         # 回调

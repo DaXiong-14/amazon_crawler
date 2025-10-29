@@ -1,4 +1,4 @@
-# 数据库配置
+# todo 数据库配置
 db_config = {
     'host': '192.168.0.32',
     'user': 'root',
@@ -6,4 +6,10 @@ db_config = {
     'database': 'amazon_data',
     'port': 3306,
     'charset': 'utf8mb4'
+}
+
+# todo Flask 服务器
+flask_host = {
+    'master': '192.168.0.32',
+    'DE': '192.168.0.33'
 }
