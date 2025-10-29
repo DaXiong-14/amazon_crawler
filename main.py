@@ -8,12 +8,11 @@ from datetime import datetime
 
 import requests
 
-from config.config import flask_host
-from src.AliExpressCrawler import AliExpressCrawler
+from config.config import flask_host, PORT
 from src.amazon_listing_crawler import crawl_search_results
 from src.amazon_product_extractor import get_product_details
 from tool.pipeline import toJson
-from tool.utils import _fetch_category_data, ThreadSafeConstant, SeleniumPool
+from tool.utils import _fetch_category_data, ThreadSafeConstant, SeleniumPool, _get_marketId
 from src.amazon_category_integration_crawler import category_integration_master
 from src.amazon_selection_crawler import selection_master, selection_slave
 
@@ -104,16 +103,14 @@ def selection_start():
     亚马逊 精选商品 爬虫启动方法
     :return:
     """
-    # todo 初始化 selenium 连接池
-    # todo 获取id 配置文件
-    with open('config/categoryID.txt', 'r', encoding='utf-8') as f:
-        ids = f.read().splitlines()
-    # todo 遍历 ids 列表
-    for c in ids:
-        # todo 调用类目整合主方法
-        if c:
-            category_id = c.split(',')
-            selection_core(category_id[0], category_id[1])
+    print(" 此程序用于卖家精灵选品数据抓取！")
+    print(" 传入 类目ID 与 site（US,DE） 参数 ")
+    cid = input('请输入 CID: ')
+    site = input('请输入 site: ')
+    try:
+        selection_core(cid, site=site)
+    except Exception as e:
+        logger.error(f'程序执行失败！{cid} - {e}')
 
 
 def selection_core(cid, site):
@@ -127,7 +124,7 @@ def selection_core(cid, site):
     pool = SeleniumPool(pool_size=8, site=site)
     i_url = 'https://www.sellersprite.com/v2/competitor-lookup/nodes'
     params = {
-        'marketId': 4,  # 4 德国站
+        'marketId': _get_marketId(site=site),  # 4 德国站
         'able': 'bsr_sales_nearly',
         'nodeLabelPath': cid
     }
@@ -209,7 +206,7 @@ def category_integration_start(site="US", method='f'):
         # todo 提交服务器
         for k in result_dict.keys():
             host = flask_host.get(k)
-            url = f'https://{host}:8080/api/crawler/cn'
+            url = f'http://{host}:{str(PORT)}/api/crawler/cn'
             response = requests.post(url, json=result_dict[k])
             if response.status_code != 202:
                 logger.error(f'爬虫程序失败！{response.json().get('error')}')
@@ -217,18 +214,8 @@ def category_integration_start(site="US", method='f'):
 
 
 
-
-
-
 if __name__ == '__main__':
     # selection_start()
     category_integration_start()
-    # _uc_amazon_product('https://www.amazon.de/s?rh=n%3A1981774031&fs=true&page=5')
-    # _selenium_amazon_product('https://www.amazon.de')
-    # a = AliExpressCrawler()
-    # a.search_by_image('https://m.media-amazon.com/images/I/71leFiNSN9L._AC_SX679_.jpg')
-    # queryMaster('1981665031', 'DE')
-    # aliexpress = AliExpressCrawler()
-    # aliexpress.search_by_image('https://m.media-amazon.com/images/I/41io100puXL._AC_SX679_.jpg')
 
 

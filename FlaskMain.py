@@ -7,6 +7,7 @@ from queue import Queue
 from threading import Thread
 import uuid
 
+from config.config import PORT
 from src.queryData import queryMaster
 
 
@@ -101,4 +102,4 @@ def get_status():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(host='0.0.0.0', port=PORT, debug=True)

@@ -13,3 +13,6 @@ flask_host = {
     'master': '192.168.0.32',
     'DE': '192.168.0.33'
 }
+
+# todo flask 服务器端口号
+PORT = 8080
