@@ -12,8 +12,8 @@ from src.amazon_product_extractor import processing_title, processing_image, pro
     processing_description
 from tool.keywords_amount_utils import export_token
 from tool.utils import _read_user, fetch_amazon_selection_data, fetch_amazon_detailed_data, _get_site_url, \
-    merge_list_of_dicts, ThreadSafeConstant, get_amazon_product
-from src.AliExpressCrawler import AliExpressCrawler
+    merge_list_of_dicts
+
 
 
 
@@ -104,7 +104,7 @@ def selection_slave(conf:dict, items, pool=None):
     if pool is None:
         return finalItems
 
-    processed_data = crawl_item_info(finalItems, pool, conf.get('site'), t=True)
+    processed_data = crawl_item_info(finalItems, pool, conf.get('site'))
 
     # todo 10. 合并亚马逊数据
     newItems = merge_list_of_dicts(finalItems, processed_data)
@@ -119,13 +119,12 @@ def selection_slave(conf:dict, items, pool=None):
 
 
 
-def crawl_item_info(finalItems, pool , site, t):
+def crawl_item_info(finalItems, pool , site):
     """
     爬取商品详细信息
     :param finalItems:
     :param pool: selenium pool
     :param site:
-    :param t: 是否阿里搜索
     :return:
     """
     # todo 9.1 定义 cookies 变量
@@ -137,7 +136,7 @@ def crawl_item_info(finalItems, pool , site, t):
     data_lock = threading.Lock()  # 保护结果列表
 
     # todo 9.4 定义一个异步执行方法
-    def process_batch(a, i, s, p, rt):
+    def process_batch(a, i, s, p):
         """
         异步执行方法
         :param a: asin
@@ -153,11 +152,10 @@ def crawl_item_info(finalItems, pool , site, t):
             # if 'cookies' in productJSON:
             #     SAFE_CONST.update(productJSON['cookies'])
             productJSON = {}
-            rCont = 0
             # todo 重试机制
             productJSON = p.get_page_source(baseurl, body={'image':i})
             for _ in range(3):
-                if processed_data:
+                if productJSON:
                     break
                 else:
                     productJSON = p.get_page_source(baseurl, body={'image': i})
@@ -167,10 +165,7 @@ def crawl_item_info(finalItems, pool , site, t):
                 # todo 查找同款
                 product_data['similarList'] = json.dumps(productJSON.get('similarList'))
                 # todo 阿里搜索
-                if rt:
-                    aliexpress_crawler = AliExpressCrawler()
-                    ai_items = aliexpress_crawler.search_by_image(i)
-                    product_data['aliexpress'] = json.dumps(ai_items)
+                product_data['aliexpress'] = json.dumps(productJSON.get('aliexpress'))
                 # todo 存储数据
                 processed_data.append(product_data)
             return {
@@ -191,7 +186,7 @@ def crawl_item_info(finalItems, pool , site, t):
                 if imageUrl is None:
                     imageUrl = item.get('imageUrl')
                 if imageUrl is not None:
-                    futures.append(executor.submit(process_batch, item.get('asin'), imageUrl, site, pool, t))
+                    futures.append(executor.submit(process_batch, item.get('asin'), imageUrl, site, pool))
                     time.sleep(random.uniform(1,2))
         # 等待所有任务完成并处理异常
         for future in as_completed(futures):

@@ -12,7 +12,7 @@ from tool.pipeline import toJson
 logger = logging.getLogger(__name__)
 
 
-def queryMaster(cid, site, p='cn'):
+def queryMaster(cid, site):
     """
     :param cid:
     :param site:

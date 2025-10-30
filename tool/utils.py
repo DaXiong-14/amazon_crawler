@@ -15,7 +15,6 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
-import undetected_chromedriver as uc
 from urllib.parse import quote
 
 
@@ -110,12 +109,13 @@ class SeleniumPool:
 
         return driver, release
 
-    def get_page_source(self, url, body=None, timeout=40):
+    def get_page_source(self, url, judgment=False, body=None, timeout=40):
         """
         获取页面源码并自动释放driver
         :param url: 要访问的URL
         :param body: 是否有图片信息
         :param timeout: 页面加载超时时间(秒)
+        :param judgment: 页面是 否需要 判断（判断是否 需要保留 一般是产品详情 上架时间）
         :return: 页面源码(HTML)
         """
         driver, release = self.get_random_driver()
@@ -133,46 +133,29 @@ class SeleniumPool:
                     '*.json', '*.xml'
                 ]
             })
-
-            # 访问页面
+            # todo 访问页面
             driver.get(url)
             driver.implicitly_wait(20)
-
-            # # 处理反爬
-            # _handle_browser_popups(driver, _get_site_url(self.site))
-            # driver.implicitly_wait(20)
-
-            # 获取页面数据
+            # todo 处理反爬
+            _handle_browser_popups(driver, _get_site_url(self.site), f=False)
+            driver.implicitly_wait(20)
+            # todo 获取页面数据
             cookies = driver.get_cookies()
             page_source = driver.page_source.encode('utf-8').strip()
-
-            if 'Request was throttled' in driver.page_source:
-                driver.refresh()
-                driver.implicitly_wait(20)
-                logger.info("请求被限制，已重新刷新！")
-            if '<h2>Tut uns Leid!' in driver.page_source:
-                logger.warning("请求被限制，准备重新访问站点主页！")
-                driver.get( _get_site_url(self.site))
-                driver.implicitly_wait(20)
-                logger.info("请求被限制，已重新访问站点主页！")
-                time.sleep(20)
-                # todo 回调
-                return self.get_page_source(url=url, body=body)
-
-            logger.info("浏览器驱动成功获取页面内容")
-
-            # 恢复网络拦截 - 关键步骤
+            logger.info("浏览器驱动成功获取页面内容！")
+            # todo 恢复网络拦截 - 关键步骤
             driver.execute_cdp_cmd('Network.setBlockedURLs', {
                 'urls': []
             })
             driver.execute_cdp_cmd('Network.disable', {})
             if not body is None:
-                time.sleep(random.uniform(1,2))
                 similarList = self.get_similar_products(driver, body.get('image'), max_retries=3)
+                aliexpress = []
                 return {
                     'cookies': cookies,
                     'pageSource': page_source,
-                    'similarList': similarList
+                    'similarList': similarList,
+                    'aliexpress': aliexpress,
                 }
             return {
                 'cookies': cookies,
@@ -182,7 +165,7 @@ class SeleniumPool:
             logger.info(f"获取页面源码失败: {str(e)}")
             return {}
         finally:
-            release()  # 确保无论如何都释放driver
+            release()  # todo 确保无论如何都释放driver
 
 
     def get_similar_products(self, driver, imageUrl, max_retries):
@@ -214,57 +197,12 @@ class SeleniumPool:
             driver.get(base_url)
             # todo 时间等待
             driver.implicitly_wait(20)
-            # todo 处理可能的弹窗
-            if 'Request was throttled' in driver.page_source:
-                driver.refresh()
-                driver.implicitly_wait(20)
-                logger.info("请求被限制，已重新刷新！")
-            if '<h2>Tut uns Leid!' in driver.page_source:
-                logger.warning("请求被限制，准备重新访问站点主页！")
-                driver.get(_get_site_url(self.site))
-                driver.implicitly_wait(20)
-                logger.info("请求被限制，已重新访问站点主页！")
-                time.sleep(20)
-                # todo 回调
-                return self.get_similar_products(driver, imageUrl, max_retries)
-            # todo 轮询等待拦截数据
-            retry_count = 0
-            while retry_count < max_retries:
-                max_wait_time = 20
-                poll_interval = 0.5
-                waited = 0
-                while waited < max_wait_time:
-                    intercepted_arr = driver.execute_script('return window._interceptedStylesnapArr;')
-                    if intercepted_arr and isinstance(intercepted_arr, list):
-                        logger.info(f'🎯 发现目标接口')
-                        for intercepted in intercepted_arr:
-                            try:
-                                json.loads(intercepted['body'])
-                                logger.info('✨ 拦截完成!')
-                                # 超时后执行JS停止加载
-                                driver.execute_script("window.stop()")
-                                # 恢复网络拦截 - 关键步骤
-                                driver.execute_cdp_cmd('Network.disable', {})
-                                return process_intercepted_data(intercepted['body'])
-                            except Exception as e:
-                                logger.error(f'❌ 响应数据不是Json: {e}')
-                                continue
-                    if waited % 5 == 0:
-                        logger.info(f'⏰ 已等待 {waited} 秒，尚未拦截到 JSON 数据...')
-                    time.sleep(poll_interval)
-                    waited += poll_interval
-                retry_count += 1
-                logger.info(f'⚠️ 超时：未拦截到 JSON 数据，刷新页面重试（第{retry_count}次）...')
-                driver.refresh()
-                # todo 清空拦截数组，防止旧数据影响
-                driver.execute_script('window._interceptedStylesnapArr = [];')
-            logger.info('⏹️ 多次刷新后仍未拦截到 JSON 数据，停止加载')
-            # 恢复网络拦截 - 关键步骤
-            driver.execute_cdp_cmd('Network.setBlockedURLs', {
-                'urls': []
-            })
-            driver.execute_cdp_cmd('Network.disable', {})
-            return []
+            # todo 处理反爬
+            _handle_browser_popups(driver, _get_site_url(self.site), f=False)
+            driver.implicitly_wait(20)
+            # todo 获取数据
+            processData = process_intercepted_data(_captureAPI(driver, max_retries))
+            return processData
         except Exception as e:
             logger.error(f'💥 执行过程中出错: {e}')
             # 恢复网络拦截 - 关键步骤
@@ -272,6 +210,88 @@ class SeleniumPool:
                 'urls': []
             })
             driver.execute_cdp_cmd('Network.disable', {})
+            return []
+
+    @staticmethod
+    def search_by_image(driver, image_url, max_retries = 3):
+        """
+        通过图片链接在1688搜索相似产品，全部用selenium元素操作提取数据
+        :param driver: selenium 实列
+        :param image_url: 产品图片URL
+        :param max_retries:
+        :return: 相似产品列表
+        """
+        logger.info(f"开始在1688搜索图片: {image_url}")
+        try:
+            searchUrl = "https://aibuy.1688.com/landingpage?bizType=selectionTool&customerId=sellerspriteLP&lang=zh&currency=CNY"
+            driver.get(searchUrl)
+            # todo 处理可能的弹窗
+            try:
+                button = WebDriverWait(driver, 3).until(
+                    EC.element_to_be_clickable((By.XPATH, '//*[@id="driver-popover-content"]/footer/span[2]/button[2]'))
+                )
+                button.click()
+                logger.info('成功处理弹窗！')
+            except Exception as e:
+                logger.warning(f'没有找到弹窗 {str(e)} ，继续执行...')
+                driver.implicitly_wait(20)
+
+            # todo 钩子提前注入，收集 url+body
+            with open(os.path.join(os.getcwd(), 'js\\selenium_hook.js'), 'r', encoding='utf-8') as f:
+                js_hook = f.read().replace('upload?stylesnapToken', 'mtop.mbox.fc.common.gateway/1.0/')
+            driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {'source': js_hook})
+
+            def click_to_operate():
+                # todo 点击搜图按钮
+                image_button = WebDriverWait(driver, 5).until(
+                    EC.element_to_be_clickable((By.XPATH, '//span[contains(text(),"图片链接搜索")]'))
+                )
+                image_button.click()
+                time.sleep(random.uniform(0,1))
+                # todo 输入图片链接
+                textarea = WebDriverWait(driver, 5).until(
+                    EC.element_to_be_clickable((By.XPATH, '//*[@id="rc-tabs-0-panel-imageUrl"]/div/span/textarea'))
+                )
+                textarea.clear()
+                textarea.send_keys(image_url)
+                time.sleep(random.uniform(0, 1))
+                # todo 先清空拦截数据
+                driver.execute_script('window._interceptedStylesnapArr = [];')
+                logger.info('🔄 已清空拦截数组，准备捕获新请求数据')
+                # todo 点击搜索按钮
+                searchButton = WebDriverWait(driver, 5).until(
+                    EC.element_to_be_clickable((By.XPATH, '//div[@class="ant-modal-footer"]/span[contains(text(),"确定")]'))
+                )
+                searchButton.click()
+            click_to_operate()
+            # todo 判断是否可以拦截
+            outTime = 0
+            retry_count = 0
+            while True:
+                if outTime > 20:    # 拦截超时
+                    if retry_count < max_retries:
+                        logger.error('多次获取 1688 图片数据失败，停止访问')
+                        return []
+                    retry_count += 1
+                    driver.refresh()
+                    click_to_operate()
+                if driver.current_url != searchUrl:
+                    break
+                else:
+                    time.sleep(outTime)
+                    outTime += 0.5
+            driver.refresh()
+            # todo 截取数据
+            api_data = _captureAPI(driver)
+            try:
+                reData = api_data['data']['result']['data']
+                return reData
+            except Exception as e:
+                logger.warning(f'获取数据异常 {str(e)} ')
+            return []
+
+        except Exception as e:
+            logger.error(f"1688图片搜索失败: {e}")
             return []
 
 
@@ -352,7 +372,7 @@ def _get_browser_options():
     options = Options()
 
     # 性能优化选项
-    options.add_argument("--headless=new")
+    # options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
@@ -382,33 +402,9 @@ def _get_browser_options():
     return options
 
 
-def _get_uc_browser_options():
-    """使用undetected-chromedriver创建驱动"""
-    options = uc.ChromeOptions()
-
-    # 反检测配置
-    options.add_argument("--disable-blink-features=AutomationControlled")
-    options.add_argument("--disable-extensions")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-
-    # 随机用户代理
-    options.add_argument(f"--user-agent={_get_browser_ua()}")
-    # 窗口大小随机化
-    options.add_argument(f"--window-size={random.randint(1200, 1920)},{random.randint(800, 1080)}")
-    prefs = {
-        "profile.managed_default_content_settings.images": 2,
-        "profile.managed_default_content_settings.stylesheets": 2
-    }
-    options.add_experimental_option("prefs", prefs)
-
-    return options
-
-
-def _handle_browser_popups(driver, origin):
+def _handle_browser_popups(driver, origin, f=True):
     """处理亚马逊常见反爬"""
     driver.implicitly_wait(20)
-    wait = WebDriverWait(driver, 3)
     if 'Request was throttled' in driver.page_source:
         driver.refresh()
         driver.implicitly_wait(20)
@@ -424,20 +420,21 @@ def _handle_browser_popups(driver, origin):
         logger.info("请求被限制，已重新访问站点主页！")
         # todo 回调
         _handle_browser_popups(driver, origin)
-    try:
-        divBox = driver.find_element(By.CSS_SELECTOR, ".a-container.a-padding-double-large")
-        button = divBox.find_element(By.CLASS_NAME, "a-button-text")
-        button.click()
-        logger.info("成功处理机器人反爬!")
-    except:
-        pass
-    driver.implicitly_wait(20)
-    try:
-        accept_button = driver.find_element(By.ID, "sp-cc-accept")
-        accept_button.click()
-        logger.info("成功点击Cookie同意按钮!")
-    except:
-        pass
+    if f:
+        try:
+            divBox = driver.find_element(By.CSS_SELECTOR, ".a-container.a-padding-double-large")
+            button = divBox.find_element(By.CLASS_NAME, "a-button-text")
+            button.click()
+            logger.info("成功处理机器人反爬!")
+        except Exception as e:
+            logger.warning(str(e))
+        driver.implicitly_wait(20)
+        try:
+            accept_button = driver.find_element(By.ID, "sp-cc-accept")
+            accept_button.click()
+            logger.info("成功点击Cookie同意按钮!")
+        except Exception as e:
+            logger.warning(str(e))
 
 
 def _setup_postal_code(driver, site="US"):
@@ -615,7 +612,7 @@ def _selenium_amazon_product(baseurl, site=None):
         driver.implicitly_wait(20)
 
         # 设置邮政编码
-        # _setup_postal_code(driver, site=site)
+        _setup_postal_code(driver, site=site)
 
         # 获取页面数据
         cookies = driver.get_cookies()
@@ -633,127 +630,6 @@ def _selenium_amazon_product(baseurl, site=None):
         return None
 
 
-def _uc_amazon_product(baseurl, site=None):
-    """
-        undetected-chromedriver 获取 亚马逊 页面源码
-        :site: 站点 DE US
-        :baseurl: 页面链接
-    """
-    logger.info('初始化undetected-chromedriver浏览器驱动...')
-    try:
-        options = _get_uc_browser_options()
-        driver = uc.Chrome(
-            headless=False,
-            driver_executable_path='../drivers/chromedriver.exe',
-            options=options,
-            version_main=141,
-            use_subprocess=True,
-        )
-
-        # 移除WebDriver特征
-        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-            "source": """
-                Object.defineProperty(navigator, 'webdriver', {
-                    get: () => undefined
-                });
-                window.chrome = {runtime: {}};
-                delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
-                delete window.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
-                delete window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
-                """
-        })
-
-        # 修改插件信息
-        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-            "source": """
-                Object.defineProperty(navigator, 'plugins', {
-                    get: () => [{
-                        description: 'Portable Document Format',
-                        filename: 'internal-pdf-viewer',
-                        length: 1,
-                        name: 'PDF Viewer'
-                    }]
-                });
-                """
-        })
-
-        # 修改语言设置
-        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-            "source": """
-                Object.defineProperty(navigator, 'languages', {
-                    get: () => ['en-US', 'en']
-                });
-                """
-        })
-
-        # 访问页面
-        driver.get(baseurl)
-        driver.implicitly_wait(20)
-
-        # 处理反爬
-        _handle_browser_popups(driver, _get_site_url(site))
-        driver.implicitly_wait(20)
-
-        # 获取页面数据
-        cookies = driver.get_cookies()
-        page_source = driver.page_source.encode('utf-8').strip()
-
-        driver.close()
-
-        logger.info("浏览器驱动成功获取页面内容")
-        return {
-            'cookies': cookies,
-            'pageSource': page_source,
-        }
-
-    except Exception as e:
-        print(e)
-        logger.error(f"浏览器undetected-chromedriver驱动初始化失败: {e}")
-        return None
-
-
-def _fetch_category_data(site: str) -> List[Dict[str, Any]]:
-    """
-    读取配置文件匹配类目列表
-    :param site: 站点名称
-    :return:
-    """
-    datalist = []
-
-    # 读取配置文件
-    with open(os.path.join(os.getcwd(), 'config\\requirement-category.txt'), 'r', encoding='utf-8') as f:
-        category_ids = [line.strip() for line in f if line.strip()]
-
-    # 读取JSON数据
-    def read_json_data(file_path: str) -> List[Dict[str, Any]]:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            return [json.loads(line.strip()) for line in f if line.strip()]
-
-    nrs = read_json_data(os.path.join(os.getcwd(), f'temp\\category_config-{site}-NR.json'))
-    bsrs = read_json_data(os.path.join(os.getcwd(), f'temp\\category_config-{site}-BSR.json'))
-
-    # 合并两种排名类型数据
-    rank_data = {'NR': nrs, 'BSR': bsrs}
-
-    def process_category(category_id: str, rank_type: str) -> None:
-        """递归处理分类数据"""
-        for item in rank_data[rank_type]:
-            if category_id == item['parent']['id']:
-                parent_data = item['parent'].copy()
-                parent_data['bs'] = rank_type
-                datalist.append(parent_data)
-
-                # 处理子项
-                if item.get('items'):
-                    for child_item in item['items']:
-                        process_category(child_item['id'], rank_type)
-
-    # 处理所有分类ID
-    for rank_type in ['NR', 'BSR']:
-        for category_id in category_ids:
-            process_category(category_id, rank_type)
-
-    return datalist
 
 
 def fetch_amazon_selection_data(cookie: str, params: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -850,7 +726,7 @@ def fetch_amazon_detailed_data(token: str, asins: str, site: str, t=False) -> Di
                                                params=p)
                     time.sleep(random.uniform(2, 5))
                     new_response.raise_for_status()
-                    data = new_response.json
+                    data = new_response.json()
                 except Exception as e:
                     logger.error(f"刷新令牌请求失败: {e}")
                     raise Exception(f'令牌刷新失败，请检查账号状态！{user}')
@@ -902,8 +778,6 @@ def fetch_amazon_detailed_data(token: str, asins: str, site: str, t=False) -> Di
             'data': [],
             'message': str(e)
         }
-
-
 
 
 def merge_json(left: dict, right: dict) -> dict:
@@ -984,3 +858,82 @@ def _get_marketId(site):
         'FR': 5,
     }
     return marketIdJSON.get(site)
+
+
+def _captureAPI(driver, max_retries=3):
+    # todo 轮询等待拦截数据
+    retry_count = 0
+    while retry_count < max_retries:
+        max_wait_time = 20
+        poll_interval = 0.5
+        waited = 0
+        while waited < max_wait_time:
+            intercepted_arr = driver.execute_script('return window._interceptedStylesnapArr;')
+            if intercepted_arr and isinstance(intercepted_arr, list):
+                logger.info(f'🎯 发现目标接口')
+                for intercepted in intercepted_arr:
+                    try:
+                        processJSON = json.loads(intercepted['body'])
+                        logger.info('✨ 拦截完成!')
+                        # 超时后执行JS停止加载
+                        driver.execute_script("window.stop()")
+                        # 恢复网络拦截 - 关键步骤
+                        driver.execute_cdp_cmd('Network.disable', {})
+                        return processJSON
+                    except Exception as e:
+                        logger.error(f'❌ 响应数据不是Json: {e}')
+                        continue
+            if waited % 5 == 0:
+                logger.info(f'⏰ 已等待 {waited} 秒，尚未拦截到 JSON 数据...')
+            time.sleep(poll_interval)
+            waited += poll_interval
+        retry_count += 1
+        logger.info(f'⚠️ 超时：未拦截到 JSON 数据，刷新页面重试（第{retry_count}次）...')
+        driver.refresh()
+        # todo 清空拦截数组，防止旧数据影响
+        driver.execute_script('window._interceptedStylesnapArr = [];')
+
+    logger.info('⏹️ 多次刷新后仍未拦截到 JSON 数据，停止加载')
+    # 恢复网络拦截 - 关键步骤
+    driver.execute_cdp_cmd('Network.setBlockedURLs', {
+        'urls': []
+    })
+    driver.execute_cdp_cmd('Network.disable', {})
+    return {}
+
+
+
+
+def fetch_amazon_similar_products(origin, image_url, max_retries=3):
+    """
+    方法获取 亚马逊同款 信息
+    关键后端接口 https://www.amazon.com/stylesnap/upload?stylesnapToken=
+    :param origin: 站点 <https://www.amazon.com>
+    :param image_url:  亚马逊主图 url
+    :param max_retries: 最大重试次数
+    :return:
+    """
+
+    base_url = f'{origin}/stylesnap?q={quote(image_url)}'
+    driver = webdriver.Edge(options=_get_browser_options())
+    try:
+        # todo 钩子提前注入，收集 url+body
+        with open(os.path.join(os.getcwd(), 'js\\selenium_hook.js'), 'r', encoding='utf-8') as f:
+            js_hook = f.read()
+        driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {'source': js_hook})
+        # todo 访问页面
+        logger.info(f'🚀 访问页面: {base_url}')
+        driver.get(base_url)
+        # todo 处理可能的弹窗
+        _handle_browser_popups(driver, origin)
+        # todo 时间等待
+        driver.implicitly_wait(20)
+        return _captureAPI(driver,max_retries)
+
+    except Exception as e:
+        logger.error(f'💥 执行过程中出错: {e}')
+        return []
+
+    finally:
+        driver.quit()
+        logger.info('🔚 浏览器已关闭')

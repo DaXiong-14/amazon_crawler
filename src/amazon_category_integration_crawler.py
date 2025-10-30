@@ -1,5 +1,4 @@
 import logging
-import os
 import random
 import threading
 import time
@@ -8,7 +7,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 
 from src.amazon_selection_crawler import crawl_item_info
-from tool.pipeline import toJson, MySQLPipeline
+from tool.pipeline import MySQLPipeline
 from tool.utils import _get_site_url, merge_list_of_dicts, SeleniumPool
 
 logger = logging.getLogger(__name__)
@@ -19,12 +18,11 @@ def category_integration_master(cid, site):
     亚马逊 类目综合数据 爬虫主方法
     :param cid: 类目ID
     :param site: 站点
-    :param pool: selenium 连接池
     """
     logger.info(f'开始爬取类目 {cid} 综合数据...')
     start_time = datetime.now()
 
-    pool = SeleniumPool(pool_size=8, site=site)
+    pool = SeleniumPool(pool_size=10, site=site)
 
     # todo 异步加载
     items = []
@@ -44,6 +42,7 @@ def category_integration_master(cid, site):
             items_json = crawl_category_integration(c, g, p)
             with data_lock:
                 items.extend(items_json.get('items'))
+                pageMax = items_json.get('pageMax')
                 if len(items) >= 500:
                     # todo 关键达到500条数据，设置停止事件
                     stop_event.set()
@@ -75,7 +74,7 @@ def category_integration_master(cid, site):
     # todo 数据去重 排序 重构
     ranked_items = process_and_rank_items(items)
     # todo 获取详细数据
-    processed_data = crawl_item_info(ranked_items, pool, site, t=True)
+    processed_data = crawl_item_info(ranked_items, pool, site)
     # todo 更新items
     reItems = merge_list_of_dicts(ranked_items, processed_data)
 
@@ -177,9 +176,20 @@ def crawl_category_integration(cid, page, pool):
             logger.error(f'解析商品信息失败: {e}')
             continue
 
+    maxPage = None
+    divPageBox = soup.find_all('div', {'aria-label': 'pagination', 'role': 'navigation'})
+    if divPageBox:
+        spanBox = soup.select_one('span.s-pagination-item.s-pagination-disabled')
+        if spanBox:
+            try:
+                maxPage = int(spanBox.get_text(strip=True))
+            except Exception as e:
+                logger.error(f'页码值无效: {e}')
+
     return {
         'items': items,
         'page': page,
+        'maxPage': maxPage,
     }
 
 

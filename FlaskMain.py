@@ -39,14 +39,14 @@ def task_worker():
 
         try:
             # todo 检验参数
-            if 'site' in task_data or 'cid' in task_data or 'p' in task_data:
+            if 'site' in task_data or 'cid' in task_data:
                 raise Exception('缺少重要参数')
             if 'error' in task_data:
                 raise Exception(task_data['error'])
 
             logger.info(f"开始执行任务: {task_data}")
             if task_data.get('p') == 'cn':
-                queryMaster(task_data['cid'], task_data['site'], task_data['p'])
+                queryMaster(task_data['cid'], task_data['site'])
 
 
             logger.info(f"任务完成: {task_data}")

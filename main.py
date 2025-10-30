@@ -10,7 +10,6 @@ import requests
 
 from config.config import flask_host, PORT
 from src.amazon_listing_crawler import crawl_search_results
-from src.amazon_product_extractor import get_product_details
 from tool.pipeline import toJson
 from tool.utils import _fetch_category_data, ThreadSafeConstant, SeleniumPool, _get_marketId
 from src.amazon_category_integration_crawler import category_integration_master
@@ -29,73 +28,6 @@ def setup_logging():
 
 setup_logging()
 logger = logging.getLogger(__name__)
-
-
-def ranking_start(site="US"):
-    """
-    亚马逊 畅销排名 与新品排名 爬虫启动方法
-    :param site: 站点
-    :return:
-    """
-    # todo 调用 函数 生成类目列表
-    category_datalist = _fetch_category_data(site)
-
-    for category_data in category_datalist:
-        rank_core(category_data)
-
-
-def rank_core(datajson, site="US"):
-    """
-    :param datajson:
-    :param site:
-    :return:
-    """
-    # todo 获取类目列表数据
-    result_json = crawl_search_results(datajson['baseurl'], site=site)
-    cookies = result_json['cookies']
-    results = result_json['data']
-
-    # todo 初始化"常量" （异步 cookie 值）
-    SAFE_CONST = ThreadSafeConstant(cookies)
-
-    # todo 定义数据 存储列表
-    processed_data = []
-    data_lock = threading.Lock()  # 保护结果列表
-
-    # todo 定义一个异步执行方法
-    def process_batch(result):
-        """
-        异步执行方法
-        :param result:
-        """
-        try:
-            data = get_product_details(result, SAFE_CONST.cookies, site)
-            if 'cookies' in data:
-                SAFE_CONST.update(data['cookies'])
-            with data_lock:
-                processed_data.append(data['data'])
-            return data['data']
-        except Exception as e:
-            logger.error(f"处理失败: {e}")
-            raise  # 重新抛出异常以便主线程捕获
-
-    # todo 使用线程池控制并发数
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        # 提交所有任务
-        futures = [executor.submit(process_batch, result.updata({
-            'category_id': datajson['id'],
-            'category': datajson['category'],
-            'bs': datajson['bs'],
-        })) for result in results]
-        # 等待所有任务完成并处理异常
-        for future in as_completed(futures):
-            try:
-                future.result()  # 获取结果（会抛出线程中的异常）
-            except Exception as e:
-                logger.error(f"任务执行出错: {e}")
-
-    # todo 调用数据存储管道
-
 
 
 def selection_start():
@@ -207,7 +139,7 @@ def category_integration_start(site="US", method='f'):
         for k in result_dict.keys():
             host = flask_host.get(k)
             url = f'http://{host}:{str(PORT)}/api/crawler/cn'
-            response = requests.post(url, json=result_dict[k])
+            response = requests.post(url, json={'data': result_dict[k]})
             if response.status_code != 202:
                 logger.error(f'爬虫程序失败！{response.json().get('error')}')
 

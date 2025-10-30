@@ -1,86 +1,8 @@
-# todo 功能 用于获取 亚马逊 详情页面数据
-import json
+# todo 功能 用于解析 亚马逊 详情页面数据
 import logging
-from datetime import datetime
 import re
 
-from tool.utils import get_amazon_product, _get_site_url
-from src.amazon_similar_products import fetch_amazon_similar_products
-from bs4 import BeautifulSoup
-
 logger = logging.getLogger(__name__)
-
-def get_product_details(result, cookies=None, site=None):
-    """
-    # 管关键方法 无法获取到数据 就一直回调
-    # 超过 10次 放弃该页面 错误上报给服务器后端
-    :param result: 列表排名信息
-    :param cookies: 未过期的 selenium cookies
-    :param site: 站点 US DE
-    :return: json 数据
-    """
-    # todo 解析 result
-    web = _get_site_url(site)
-    asin = result['asin']
-    baseurl = f'{web}/dp/{asin}?psc=1'
-    retryCount = 0
-    while True:
-        try:
-            response_json = get_amazon_product(baseurl, cookies, site)
-            re_cookies = response_json['cookies']
-            page_source = response_json.get("pageSource")
-            # todo 数据返回值
-            product_data = {}
-            # todo 解析数据 (bs4)
-            soup = BeautifulSoup(page_source, 'html.parser')
-            # todo asin
-            product_data['asin'] = asin
-            # todo 标题
-            product_data['title'] = processing_title(soup)
-            # 主图
-            image = processing_image(soup)
-            product_data['image'] = image
-            # todo 评分，评论
-            product_data.update(processing_CustomerReviews(soup))
-            # todo 附加信息 尺码 颜色 等
-            product_data['additionalINFO'] = processing_additional(soup)
-            # todo 价格处理
-            product_data.update(processingPrices(soup))
-            # todo 产品材质，描述
-            product_data.update(processing_description(soup))
-            # todo 站点
-            product_data['site'] = site
-            # todo 当前数据抓取时间 (时间戳 以秒为单位)
-            current_timestamp = datetime.now().timestamp()
-            product_data['timestamp'] = current_timestamp
-            # todo 类目
-            product_data['category'] = result['category']
-            product_data['category_id'] = result['category_id']
-            # todo 排名
-            product_data['ranking'] = result['rank']
-            # todo 畅销 or 新品
-            product_data['bs'] = result['bs']
-            # todo  亚马逊同款
-            if image:
-                same = fetch_amazon_similar_products(web, image, re_cookies)
-                product_data['same'] = json.dumps(same, ensure_ascii=False)
-            else:
-                product_data['same'] = None
-            logger.info('解析详情页面成功！')
-            # todo 返回数据
-            return {
-                'cookies': re_cookies,
-                'data': product_data,
-            }
-        except Exception as e:
-            logger.error(f'解析详情页面失败: {e}\n 正在重试！')
-            retryCount = retryCount + 1
-            if retryCount > 10:
-                break
-            get_amazon_product(baseurl, cookies, site)
-    # todo 在这里上报后端服务器
-
-    return {}
 
 
 def processing_title(soup):

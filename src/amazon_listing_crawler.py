@@ -1,4 +1,4 @@
-# todo 功能 用于获取 亚马逊 列表数据
+# todo 功能 用于获取 亚马逊 类目 排名数据
 import json
 import re
 

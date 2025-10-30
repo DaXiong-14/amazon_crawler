@@ -42,7 +42,6 @@ def background_task(config, task_id):
                 reqJSON = {
                     'cid': conf.get('cid'),
                     'site': conf.get('site'),
-                    'p': 'cn'
                 }
                 # 提交服务器
                 url = f'http://{flask_host.get('master')}:{str(PORT)}/api/crawler/task'
