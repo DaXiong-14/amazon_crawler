@@ -61,7 +61,7 @@ def category_integration_master(cid, site):
                 logger.info("已达到数据上限，停止提交新任务。")
                 break
             futures.append(executor.submit(process_batch_category, cid, page, pool))
-            time.sleep(random.uniform(1,2))
+            time.sleep(random.uniform(2,5))
         # 等待所有任务完成并处理异常
         for future in futures:
             try:

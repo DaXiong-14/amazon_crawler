@@ -7,7 +7,7 @@ import threading
 import uuid
 
 from src.amazon_category_integration_crawler import category_integration_master
-from config.config import flask_host
+from config.config import flask_host, PORT
 import requests
 
 def setup_logging():
@@ -45,7 +45,7 @@ def background_task(config, task_id):
                     'p': 'cn'
                 }
                 # 提交服务器
-                url = f'https://{flask_host.get('master')}:8080/api/crawler/task'
+                url = f'http://{flask_host.get('master')}:{str(PORT)}/api/crawler/task'
                 req =requests.post(url, json=reqJSON)
                 if 'error' in req.json():
                     raise Exception(req.json().get('error'))
@@ -118,4 +118,4 @@ def reset_task():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(host='0.0.0.0', port=PORT, debug=True)

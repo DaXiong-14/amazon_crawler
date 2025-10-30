@@ -146,7 +146,7 @@ class SeleniumPool:
             cookies = driver.get_cookies()
             page_source = driver.page_source.encode('utf-8').strip()
 
-            if 'Request was throttled' in page_source:
+            if 'Request was throttled' in driver.page_source:
                 driver.refresh()
                 driver.implicitly_wait(20)
                 logger.info("请求被限制，已重新刷新！")
@@ -974,3 +974,13 @@ class ThreadSafeConstant:
         with self._lock:
             self._cookies = new_cookies
 
+
+def _get_marketId(site):
+    marketIdJSON = {
+        'US': 1,
+        'JP': 2,
+        'UK': 3,
+        'DF': 4,
+        'FR': 5,
+    }
+    return marketIdJSON.get(site)
