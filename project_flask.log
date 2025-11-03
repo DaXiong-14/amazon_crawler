@@ -1,0 +1,266 @@
+2025-10-31 10:53:41,909 [INFO] werkzeug:97 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.0.251:8080
+2025-10-31 10:53:41,909 [INFO] werkzeug:97 - [33mPress CTRL+C to quit[0m
+2025-10-31 10:53:41,922 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 10:53:42,681 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 10:53:42,682 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 10:55:03,359 [INFO] werkzeug:97 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.0.251:8080
+2025-10-31 10:55:03,360 [INFO] werkzeug:97 - [33mPress CTRL+C to quit[0m
+2025-10-31 10:55:03,370 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 10:55:04,168 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 10:55:04,170 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 10:55:51,752 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 10:55:51] "[31m[1mPOST /api/<country_code>/process HTTP/1.1[0m" 400 -
+2025-10-31 10:56:50,920 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 10:56:50] "[31m[1mPOST /api/DE/process HTTP/1.1[0m" 423 -
+2025-10-31 10:56:52,005 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 10:56:52] "[31m[1mPOST /api/DE/process HTTP/1.1[0m" 423 -
+2025-10-31 10:56:52,828 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 10:56:52] "[31m[1mPOST /api/DE/process HTTP/1.1[0m" 423 -
+2025-10-31 10:56:53,566 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 10:56:53] "[31m[1mPOST /api/DE/process HTTP/1.1[0m" 423 -
+2025-10-31 11:00:20,946 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\FlaskMain.py', reloading
+2025-10-31 11:00:21,438 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 11:00:22,257 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 11:00:22,259 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 11:01:36,319 [INFO] werkzeug:97 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.0.251:8080
+2025-10-31 11:01:36,319 [INFO] werkzeug:97 - [33mPress CTRL+C to quit[0m
+2025-10-31 11:01:36,330 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 11:01:37,081 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 11:01:37,082 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 11:01:45,627 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 11:01:45] "POST /api/JP/process HTTP/1.1" 200 -
+2025-10-31 11:02:03,901 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\.venv\\Lib\\site-packages\\setuptools\\_distutils\\__init__.py', reloading
+2025-10-31 11:02:05,005 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 11:02:05,840 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 11:02:05,841 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 11:02:35,851 [INFO] werkzeug:97 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.0.251:8080
+2025-10-31 11:02:35,852 [INFO] werkzeug:97 - [33mPress CTRL+C to quit[0m
+2025-10-31 11:02:35,861 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 11:02:36,622 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 11:02:36,624 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 11:02:50,339 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 11:02:50] "POST /api/JP/process HTTP/1.1" 200 -
+2025-10-31 11:03:01,925 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 11:03:01] "[31m[1mPOST /api/JP/process HTTP/1.1[0m" 423 -
+2025-10-31 11:03:04,691 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 11:03:04] "POST /api/JP/process HTTP/1.1" 200 -
+2025-10-31 11:08:25,123 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\FlaskMain.py', reloading
+2025-10-31 11:08:25,124 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\FlaskMain.py', reloading
+2025-10-31 11:08:25,124 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\FlaskMain.py', reloading
+2025-10-31 11:08:25,468 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 11:08:26,286 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 11:08:26,288 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 11:15:23,639 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_selection_crawler.py', reloading
+2025-10-31 11:15:23,640 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_selection_crawler.py', reloading
+2025-10-31 11:15:23,640 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_selection_crawler.py', reloading
+2025-10-31 11:15:23,640 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_selection_crawler.py', reloading
+2025-10-31 11:15:23,642 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\FlaskMain.py', reloading
+2025-10-31 11:15:23,643 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\FlaskMain.py', reloading
+2025-10-31 11:15:23,643 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\FlaskMain.py', reloading
+2025-10-31 11:15:23,643 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\FlaskMain.py', reloading
+2025-10-31 11:15:23,646 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\queryData.py', reloading
+2025-10-31 11:15:23,647 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\queryData.py', reloading
+2025-10-31 11:15:23,647 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\queryData.py', reloading
+2025-10-31 11:15:23,647 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\queryData.py', reloading
+2025-10-31 11:15:24,182 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 11:15:25,019 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 11:15:25,020 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 11:16:51,366 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 11:16:51,690 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 11:16:52,429 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 11:16:52,430 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 11:18:42,725 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 11:18:43,814 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 11:18:44,573 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 11:18:44,574 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 11:19:14,786 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 11:19:14,787 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 11:19:15,507 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 11:19:16,305 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 11:19:16,307 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 11:21:40,099 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 11:21:40,735 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 11:21:41,612 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 11:21:41,614 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 11:30:27,923 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 11:30:27,924 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 11:30:28,816 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 11:30:29,620 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 11:30:29,621 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 11:35:50,160 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 11:35:51,141 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 11:35:52,125 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 11:35:52,127 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 11:38:48,473 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_selection_crawler.py', reloading
+2025-10-31 11:38:49,566 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 11:38:50,308 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 11:38:50,310 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 11:42:32,991 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 11:42:32,993 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 11:42:33,305 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 11:42:34,135 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 11:42:34,136 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 11:43:00,330 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 11:43:00,330 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 11:43:00,331 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 11:43:01,090 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 11:43:01,843 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 11:43:01,844 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 11:55:48,225 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\FlaskMain.py', reloading
+2025-10-31 11:55:48,235 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 11:55:48,236 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 11:55:48,236 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 11:55:48,236 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 11:55:49,141 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 11:55:49,957 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 11:55:49,958 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 15:56:57,733 [INFO] werkzeug:97 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.0.251:8080
+2025-10-31 15:56:57,733 [INFO] werkzeug:97 - [33mPress CTRL+C to quit[0m
+2025-10-31 15:56:57,745 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 15:56:58,556 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 15:56:58,557 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 15:57:03,530 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 15:57:03] "[31m[1mPOST /api/JP/process HTTP/1.1[0m" 423 -
+2025-10-31 15:57:04,985 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 15:57:04] "[31m[1mPOST /api/JP/process HTTP/1.1[0m" 423 -
+2025-10-31 15:57:27,969 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 15:57:27] "[31m[1mPOST /api/JP/process HTTP/1.1[0m" 423 -
+2025-10-31 15:57:29,021 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 15:57:29] "[31m[1mPOST /api/JP/process HTTP/1.1[0m" 423 -
+2025-10-31 15:57:30,118 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 15:57:30] "[31m[1mPOST /api/JP/process HTTP/1.1[0m" 423 -
+2025-10-31 15:57:38,596 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 15:57:38] "[31m[1mPOST /api/JP/process HTTP/1.1[0m" 423 -
+2025-10-31 15:57:40,703 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 15:57:40] "[31m[1mPOST /api/JP/process HTTP/1.1[0m" 423 -
+2025-10-31 15:59:01,121 [INFO] werkzeug:97 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.0.251:8080
+2025-10-31 15:59:01,122 [INFO] werkzeug:97 - [33mPress CTRL+C to quit[0m
+2025-10-31 15:59:01,132 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 15:59:01,868 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 15:59:01,869 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 15:59:06,415 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 15:59:06] "[31m[1mPOST /api/JP/process HTTP/1.1[0m" 423 -
+2025-10-31 15:59:50,979 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\FlaskMain.py', reloading
+2025-10-31 15:59:50,984 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\FlaskMain.py', reloading
+2025-10-31 15:59:51,495 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 15:59:52,344 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 15:59:52,345 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 15:59:54,587 [INFO] __main__:106 - [JP] 任务开始执行
+2025-10-31 15:59:54,587 [INFO] __main__:108 - [JP] 任务执行完成
+2025-10-31 15:59:54,588 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 15:59:54] "POST /api/JP/process HTTP/1.1" 200 -
+2025-10-31 16:00:03,085 [INFO] __main__:106 - [JP] 任务开始执行
+2025-10-31 16:00:03,085 [INFO] __main__:108 - [JP] 任务执行完成
+2025-10-31 16:00:03,085 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 16:00:03] "POST /api/JP/process HTTP/1.1" 200 -
+2025-10-31 16:00:03,745 [INFO] __main__:106 - [JP] 任务开始执行
+2025-10-31 16:00:03,745 [INFO] __main__:108 - [JP] 任务执行完成
+2025-10-31 16:00:03,745 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 16:00:03] "POST /api/JP/process HTTP/1.1" 200 -
+2025-10-31 16:00:04,482 [INFO] __main__:106 - [JP] 任务开始执行
+2025-10-31 16:00:04,482 [INFO] __main__:108 - [JP] 任务执行完成
+2025-10-31 16:00:04,482 [INFO] werkzeug:97 - 127.0.0.1 - - [31/Oct/2025 16:00:04] "POST /api/JP/process HTTP/1.1" 200 -
+2025-10-31 16:00:38,259 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\FlaskMain.py', reloading
+2025-10-31 16:00:38,261 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\FlaskMain.py', reloading
+2025-10-31 16:00:38,712 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 16:00:39,443 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 16:00:39,444 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 16:10:54,298 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\keywords_amount_utils.py', reloading
+2025-10-31 16:10:54,299 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\keywords_amount_utils.py', reloading
+2025-10-31 16:10:54,300 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\keywords_amount_utils.py', reloading
+2025-10-31 16:10:54,301 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\keywords_amount_utils.py', reloading
+2025-10-31 16:10:55,169 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 16:10:55,945 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 16:10:55,947 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 16:16:27,678 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\keywords_amount_utils.py', reloading
+2025-10-31 16:16:28,593 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 16:16:29,369 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 16:16:29,370 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 16:21:28,850 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\config\\config.py', reloading
+2025-10-31 16:21:29,097 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 16:21:29,841 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 16:21:29,842 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 16:26:35,423 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 16:26:35,424 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 16:26:35,424 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 16:26:36,114 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 16:26:36,893 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 16:26:36,894 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 16:27:13,999 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\.venv\\Lib\\site-packages\\numpy\\ma\\core.py', reloading
+2025-10-31 16:27:14,049 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\.venv\\Lib\\site-packages\\pandas\\core\\reshape\\merge.py', reloading
+2025-10-31 16:27:15,029 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 16:27:15,797 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 16:27:15,798 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 16:32:40,546 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 16:32:40,547 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 16:32:40,984 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 16:32:41,824 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 16:32:41,825 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 16:34:59,408 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 16:34:59,409 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 16:34:59,409 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 16:34:59,410 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 16:35:00,034 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 16:35:00,768 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 16:35:00,769 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 16:43:53,145 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 16:43:53,146 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\search_product.py', reloading
+2025-10-31 16:43:53,349 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 16:43:54,129 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 16:43:54,130 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 16:45:13,985 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 16:45:13,986 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 16:45:13,986 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 16:45:13,987 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 16:45:14,472 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 16:45:15,252 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 16:45:15,253 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 16:46:06,072 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_listing_crawler.py', reloading
+2025-10-31 16:46:06,103 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_product_extractor.py', reloading
+2025-10-31 16:46:06,136 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_selection_crawler.py', reloading
+2025-10-31 16:46:07,030 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 16:46:07,838 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 16:46:07,841 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 16:46:08,944 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\Baidu_Text_transAPI.py', reloading
+2025-10-31 16:46:08,967 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\JSONToExcel.py', reloading
+2025-10-31 16:46:08,998 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\pipeline.py', reloading
+2025-10-31 16:46:09,019 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\SLC.py', reloading
+2025-10-31 16:46:09,034 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\utils.py', reloading
+2025-10-31 16:46:09,263 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\cnFlaskMain.py', reloading
+2025-10-31 16:46:09,475 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\main.py', reloading
+2025-10-31 16:46:10,021 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 16:46:10,758 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 16:46:10,759 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 16:46:54,294 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\keywords_amount_utils.py', reloading
+2025-10-31 16:46:55,304 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 16:46:56,047 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 16:46:56,049 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 16:47:44,904 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\keywords_amount_utils.py', reloading
+2025-10-31 16:47:44,905 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\keywords_amount_utils.py', reloading
+2025-10-31 16:47:44,905 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\keywords_amount_utils.py', reloading
+2025-10-31 16:47:45,609 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 16:47:46,395 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 16:47:46,397 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 17:02:50,881 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 17:02:50,882 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 17:02:51,514 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 17:02:52,310 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 17:02:52,311 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 17:03:19,227 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 17:03:20,247 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 17:03:20,948 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 17:03:20,950 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 17:09:34,645 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 17:09:34,645 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 17:09:34,646 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 17:09:34,646 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\src\\amazon_category_integration_crawler.py', reloading
+2025-10-31 17:09:34,919 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 17:09:35,763 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 17:09:35,764 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 17:12:23,183 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\utils.py', reloading
+2025-10-31 17:12:23,184 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\utils.py', reloading
+2025-10-31 17:12:23,185 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\utils.py', reloading
+2025-10-31 17:12:23,674 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)
+2025-10-31 17:12:24,455 [WARNING] werkzeug:97 -  * Debugger is active!
+2025-10-31 17:12:24,457 [INFO] werkzeug:97 -  * Debugger PIN: 407-555-025
+2025-10-31 17:33:07,096 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\JSONToExcel.py', reloading
+2025-10-31 17:33:07,112 [INFO] werkzeug:97 -  * Detected change in 'C:\\Users\\PC\\Desktop\\bsr_crawler\\tool\\JSONToExcel.py', reloading
+2025-10-31 17:33:07,966 [INFO] werkzeug:97 -  * Restarting with watchdog (windowsapi)

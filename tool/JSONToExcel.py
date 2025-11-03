@@ -1,5 +1,5 @@
 import logging
-import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 from openpyxl import Workbook, load_workbook
@@ -9,16 +9,20 @@ import json
 import os
 import requests
 from io import BytesIO
+
+from src.amazon_selection_crawler import updataItems
 from tool.Baidu_Text_transAPI import BaiduTranslation
 from openpyxl.styles import colors
 from openpyxl.styles import Font
 
+from tool.keywords_amount_utils import export_token
+from tool.utils import _read_user
 
 logger = logging.getLogger(__name__)
 
 
 class AmazonExcelExporter:
-    def __init__(self, filename="amazon_products.xlsx"):
+    def __init__(self, filename="amazon_products.xlsx", site=None):
         """
         初始化Excel导出器
         :param filename: 输出Excel文件名
@@ -50,6 +54,11 @@ class AmazonExcelExporter:
         }
         # get_image 重试次数
         self.i_img = 0
+        # 卖家精灵 token
+        user = _read_user()
+        self.token = export_token(user.get('username'), user.get('password'))
+        # 站点
+        self.site = site
 
 
     def download_image(self, url):
@@ -98,10 +107,11 @@ class AmazonExcelExporter:
         for col, width in self.column_widths.items():
             self.ws.column_dimensions[col].width = width
 
-    def add_product_data(self, item):
+    def add_product_data(self, item, newAllSame=None):
         """
         添加产品数据到工作表
         :param item: 产品数据字典
+        :param newAllSame:
         """
         if not self.wb or not self.ws:
             raise Exception("请先调用create_worksheet方法创建工作表")
@@ -251,8 +261,7 @@ class AmazonExcelExporter:
         businessAddress = ""
         try:
             seller_dto = item.get('sellerDto')
-            print(item)
-            if not seller_dto :
+            if not seller_dto:
                 seller_dto = item.get("seller_dto")
             if seller_dto:
                 # 需要翻译
@@ -294,17 +303,46 @@ class AmazonExcelExporter:
 
         # todo 同款信息
         try:
-            similarList = json.loads(item.get("similarList"))
+            similarList = item.get("similarList")
             if similarList:
-                # 按评分排序
-                sorted_data = sorted(similarList,
-                                     key=lambda x: x.get('averageOverallRating', 0) or 0,
+                asinList = [similar.get('asin') for similar in json.loads(similarList)]
+                newSimilarList = updataItems(json.loads(similarList), asinList, self.token, {'site': self.site}, t=False)
+                # todo 按销量 排序
+                sorted_data = sorted(newSimilarList,
+                                     key=lambda x: x.get('units', 0) or 0,
                                      reverse=True)
-                fs = []
+                fs = [f"同款数量: {str(len(sorted_data))}",]
+                for similar in sorted_data:
+                    amazon_url = f"{item.get('itemWEB', '')}/dp/{similar.get('asin')}?th=1"
+                    bsrText = ''
+                    bsrList = similar.get("bsrList", [])
+                    if bsrList:
+                        for bsr in bsrList:
+                            bsrText += f"#{bsr.get('rank')} in {bsr.get('label')}; "
+                    itemTime = None
+                    try:
+                        updated_time = similar.get('available')
+                        if updated_time:
+                            shelves_time = datetime.fromtimestamp(int(updated_time) / 1000)
+                            formatted_date = shelves_time.strftime('%Y-%m-%d')
+                            days_on_shelves = (datetime.now() - shelves_time).days
+                            itemTime = f"{formatted_date} ({days_on_shelves} 天)"
+                    except Exception as e:
+                        logger.error(f"时间计算错误: {e}")
+
+                    fs.append(
+                        f"{similar.get('asin')}: \
+                        {bsrText},\
+                        销量{str(similar.get('units',0))}, \
+                        {itemTime}, \
+                        {str(similar.get('price'))} {similar.get('currency')}, \
+                        评分 {str(similar.get('averageOverallRating'))}, \
+                        {similar.get('totalReviewCount')} 评论, \
+                        超链接: {amazon_url}"
+                    )
+
                 for i in range(3):
                     fellow_info = sorted_data[i]
-                    amazon_url = f"{item.get('itemWEB','')}/dp/{fellow_info.get('asin')}?th=1"
-                    fs.append(f"{fellow_info.get('asin')}, 价格：{fellow_info.get('price', '')}, 评分{str(fellow_info.get('averageOverallRating'))} {fellow_info.get("totalReviewCount", '')}评论, 超链接: {amazon_url}")
                     # 同款图
                     item_image = fellow_info.get('imageUrl', '')
                     if item_image:
@@ -319,6 +357,7 @@ class AmazonExcelExporter:
                         except Exception as e:
                             logger.error(f"{asin}插入同款图失败: {e}")
                             self.ws.cell(row=row_idx, column=17 + i + 1, value='')
+
                 similarText = '\n'.join(fs)
                 self.ws.cell(row=row_idx, column=17, value=similarText)
             else:
@@ -328,7 +367,7 @@ class AmazonExcelExporter:
             self.ws.cell(row=row_idx, column=17, value="")
 
         # todo 预计配送费
-        fba_txt = f"{currency}{item.get("fba", "")}"
+        fba_txt = f"{currency}{item.get("fba", "")} {item.get('seller_type')}"
         self.ws.cell(row=row_idx, column=21, value= fba_txt)
 
         # todo 五点描述
@@ -346,8 +385,9 @@ class AmazonExcelExporter:
         self.ws.cell(row=row_idx, column=22, value=Product_information)
 
         # todo 阿里搜图
-        ai_items = json.loads(item.get("aliexpress", []))
-        if ai_items:
+        ai_itemText = item.get("aliexpress", [])
+        if ai_itemText:
+            ai_items = json.loads(ai_itemText)
             # 图一
             image_1 = ai_items[0].get("imageUrl", "")
             try:
@@ -405,6 +445,19 @@ class AmazonExcelExporter:
             self.ws.cell(row=row_idx, column=26, value="")
             self.ws.cell(row=row_idx, column=27, value="")
             self.ws.cell(row=row_idx, column=28, value="")
+
+    def add_products_batch(self, items):
+        All_same = []
+        for item in items:
+            if item.get('similarList'):
+                similarList = json.loads(item.get('similarList'))
+                for similar in similarList:
+                    if similar.get('asin') not in [same.get('asin') for same in All_same]:
+                        All_same.append(similar)
+        asinList = [same.get('asin') for same in All_same]
+        newAllSame = updataItems(All_same, asinList, self.token, {'site': self.site}, t=False)
+        for item in items:
+            self.add_product_data(item, newAllSame)
 
 
     @staticmethod

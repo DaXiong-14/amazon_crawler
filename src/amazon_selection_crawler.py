@@ -92,6 +92,10 @@ def selection_slave(conf:dict, items, pool=None):
     for item in items:
         asinList.append(item.get('asin'))
 
+    if pool is None:
+        newItems = updataItems(items, asinList, token, conf, t=True)
+        return newItems
+
     # todo 7. 第一次更新 items
     newItems = updataItems(items, asinList, token, conf, t=False)
     logger.info('第一次更新 items 完成, newItems 数量: {}'.format(len(newItems)))
@@ -101,11 +105,7 @@ def selection_slave(conf:dict, items, pool=None):
     finalItems = updataItems(newItems, asinList, token, conf, t=True)
     logger.info('第二次更新 items 完成, finalItems 数量: {}'.format(len(finalItems)))
 
-    if pool is None:
-        return finalItems
-
     processed_data = crawl_item_info(finalItems, pool, conf.get('site'))
-
     # todo 10. 合并亚马逊数据
     newItems = merge_list_of_dicts(finalItems, processed_data)
 
@@ -143,7 +143,6 @@ def crawl_item_info(finalItems, pool , site):
         :param i: image url
         :param s: site
         :param p: pool
-        :param rt: t
         """
         web = _get_site_url(s)
         baseurl = f'{web}/dp/{a}?psc=1'
@@ -231,10 +230,9 @@ def updataItems(items, asinList, token, conf, t):
     asinList = asinList
     newItems = []
     token = token
-    r = 0
     # todo 1. 循环筛选数据
     while True:
-        asins = asins = ','.join([asin for asin in asinList[0:101] if asin is not None])
+        asins = ','.join([asin for asin in asinList[0:101] if asin is not None])
         if len(asinList) < 100:
             asins = ','.join([asin for asin in asinList[0:len(asinList)+1] if asin is not None])
         # todo 2. 获取数据

@@ -109,30 +109,30 @@ class SeleniumPool:
 
         return driver, release
 
-    def get_page_source(self, url, judgment=False, body=None, timeout=40):
+    def get_page_source(self, url, body=None, timeout=40):
         """
         获取页面源码并自动释放driver
         :param url: 要访问的URL
         :param body: 是否有图片信息
         :param timeout: 页面加载超时时间(秒)
-        :param judgment: 页面是 否需要 判断（判断是否 需要保留 一般是产品详情 上架时间）
+
         :return: 页面源码(HTML)
         """
         driver, release = self.get_random_driver()
+        # todo 启用网络拦截
+        driver.execute_cdp_cmd('Network.enable', {})
+        driver.execute_cdp_cmd('Network.setBlockedURLs', {
+            'urls': [
+                '*.jpg', '*.jpeg', '*.png', '*.gif', '*.webp', '*.svg', '*.ico',
+                '*.css', '*.less', '*.scss',
+                '*.woff', '*.woff2', '*.ttf', '*.eot',
+                '*.mp4', '*.webm', '*.ogg', '*.mp3', '*.wav',
+                '*.js',
+                '*.json', '*.xml'
+            ]
+        })
         try:
             driver.set_page_load_timeout(timeout)
-            # todo 启用网络拦截
-            driver.execute_cdp_cmd('Network.enable', {})
-            driver.execute_cdp_cmd('Network.setBlockedURLs', {
-                'urls': [
-                    '*.jpg', '*.jpeg', '*.png', '*.gif', '*.webp', '*.svg', '*.ico',
-                    '*.css', '*.less', '*.scss',
-                    '*.woff', '*.woff2', '*.ttf', '*.eot',
-                    '*.mp4', '*.webm', '*.ogg', '*.mp3', '*.wav',
-                    '*.js',
-                    '*.json', '*.xml'
-                ]
-            })
             # todo 访问页面
             driver.get(url)
             driver.implicitly_wait(20)
@@ -149,8 +149,8 @@ class SeleniumPool:
             })
             driver.execute_cdp_cmd('Network.disable', {})
             if not body is None:
+                aliexpress = self.search_by_image(driver, body.get('image'))
                 similarList = self.get_similar_products(driver, body.get('image'), max_retries=3)
-                aliexpress = []
                 return {
                     'cookies': cookies,
                     'pageSource': page_source,
@@ -163,6 +163,11 @@ class SeleniumPool:
             }
         except Exception as e:
             logger.info(f"获取页面源码失败: {str(e)}")
+            # todo 恢复网络拦截 - 关键步骤
+            driver.execute_cdp_cmd('Network.setBlockedURLs', {
+                'urls': []
+            })
+            driver.execute_cdp_cmd('Network.disable', {})
             return {}
         finally:
             release()  # todo 确保无论如何都释放driver
@@ -175,23 +180,24 @@ class SeleniumPool:
             :param imageUrl: 图片链接
             :param max_retries: 最大重试次数
         """
+        # todo 启用网络拦截
+        driver.execute_cdp_cmd('Network.enable', {})
+        driver.execute_cdp_cmd('Network.setBlockedURLs', {
+            'urls': [
+                '*.gif', '*.webp', '*.svg', '*.ico',
+                '*.css', '*.less', '*.scss',
+                '*.woff', '*.woff2', '*.ttf', '*.eot',
+                '*.mp4', '*.webm', '*.ogg', '*.mp3', '*.wav'
+                '*.xml'
+            ]
+        })
+        # todo 钩子提前注入，收集 url+body
+        with open(os.path.join(os.getcwd(), 'js\\selenium_hook.js'), 'r', encoding='utf-8') as f:
+            js_hook = f.read()
+        result = driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {'source': js_hook})
+        script_identifier = result['identifier']  # 保存标识符
         try:
-            # todo 启用网络拦截
-            driver.execute_cdp_cmd('Network.enable', {})
-            driver.execute_cdp_cmd('Network.setBlockedURLs', {
-                'urls': [
-                    '*.gif', '*.webp', '*.svg', '*.ico',
-                    '*.css', '*.less', '*.scss',
-                    '*.woff', '*.woff2', '*.ttf', '*.eot',
-                    '*.mp4', '*.webm', '*.ogg', '*.mp3', '*.wav'
-                    '*.xml'
-                ]
-            })
             base_url = f'{_get_site_url(self.site)}/stylesnap?q={quote(imageUrl)}'
-            # todo 钩子提前注入，收集 url+body
-            with open(os.path.join(os.getcwd(), 'js\\selenium_hook.js'), 'r', encoding='utf-8') as f:
-                js_hook = f.read()
-            driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {'source': js_hook})
             # todo 访问页面
             logger.info(f'🚀 访问页面: {base_url}')
             driver.get(base_url)
@@ -202,10 +208,21 @@ class SeleniumPool:
             driver.implicitly_wait(20)
             # todo 获取数据
             processData = process_intercepted_data(_captureAPI(driver, max_retries))
+            # todo 恢复网络拦截 - 关键步骤
+            driver.execute_cdp_cmd('Page.removeScriptToEvaluateOnNewDocument', {
+                'identifier': script_identifier
+            })
+            driver.execute_cdp_cmd('Network.setBlockedURLs', {
+                'urls': []
+            })
+            driver.execute_cdp_cmd('Network.disable', {})
             return processData
         except Exception as e:
             logger.error(f'💥 执行过程中出错: {e}')
-            # 恢复网络拦截 - 关键步骤
+            # todo 失败也恢复网络拦截
+            driver.execute_cdp_cmd('Page.removeScriptToEvaluateOnNewDocument', {
+                'identifier': script_identifier
+            })
             driver.execute_cdp_cmd('Network.setBlockedURLs', {
                 'urls': []
             })
@@ -222,48 +239,29 @@ class SeleniumPool:
         :return: 相似产品列表
         """
         logger.info(f"开始在1688搜索图片: {image_url}")
+        # todo 启用网络拦截
+        driver.execute_cdp_cmd('Network.enable', {})
+        # todo 钩子提前注入，收集 url+body
+        with open(os.path.join(os.getcwd(), 'js\\selenium_hook.js'), 'r', encoding='utf-8') as f:
+            js_hook = f.read().replace('upload?stylesnapToken', 'mtop.mbox.fc.common.gateway')
+        result = driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {'source': js_hook})
+        script_identifier = result['identifier']  # 保存标识符
         try:
             searchUrl = "https://aibuy.1688.com/landingpage?bizType=selectionTool&customerId=sellerspriteLP&lang=zh&currency=CNY"
             driver.get(searchUrl)
+            driver.implicitly_wait(20)
+            time.sleep(random.uniform(0, 1))
             # todo 处理可能的弹窗
             try:
-                button = WebDriverWait(driver, 3).until(
-                    EC.element_to_be_clickable((By.XPATH, '//*[@id="driver-popover-content"]/footer/span[2]/button[2]'))
-                )
+                button = driver.find_element(By.XPATH, '//*[@id="driver-popover-content"]/footer/span[2]/button[2]')
                 button.click()
                 logger.info('成功处理弹窗！')
             except Exception as e:
                 logger.warning(f'没有找到弹窗 {str(e)} ，继续执行...')
                 driver.implicitly_wait(20)
 
-            # todo 钩子提前注入，收集 url+body
-            with open(os.path.join(os.getcwd(), 'js\\selenium_hook.js'), 'r', encoding='utf-8') as f:
-                js_hook = f.read().replace('upload?stylesnapToken', 'mtop.mbox.fc.common.gateway/1.0/')
-            driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {'source': js_hook})
-
-            def click_to_operate():
-                # todo 点击搜图按钮
-                image_button = WebDriverWait(driver, 5).until(
-                    EC.element_to_be_clickable((By.XPATH, '//span[contains(text(),"图片链接搜索")]'))
-                )
-                image_button.click()
-                time.sleep(random.uniform(0,1))
-                # todo 输入图片链接
-                textarea = WebDriverWait(driver, 5).until(
-                    EC.element_to_be_clickable((By.XPATH, '//*[@id="rc-tabs-0-panel-imageUrl"]/div/span/textarea'))
-                )
-                textarea.clear()
-                textarea.send_keys(image_url)
-                time.sleep(random.uniform(0, 1))
-                # todo 先清空拦截数据
-                driver.execute_script('window._interceptedStylesnapArr = [];')
-                logger.info('🔄 已清空拦截数组，准备捕获新请求数据')
-                # todo 点击搜索按钮
-                searchButton = WebDriverWait(driver, 5).until(
-                    EC.element_to_be_clickable((By.XPATH, '//div[@class="ant-modal-footer"]/span[contains(text(),"确定")]'))
-                )
-                searchButton.click()
-            click_to_operate()
+            click_to_operate(driver, image_url)
+            driver.implicitly_wait(20)
             # todo 判断是否可以拦截
             outTime = 0
             retry_count = 0
@@ -274,24 +272,30 @@ class SeleniumPool:
                         return []
                     retry_count += 1
                     driver.refresh()
-                    click_to_operate()
+                    click_to_operate(driver, image_url)
+                    driver.implicitly_wait(20)
                 if driver.current_url != searchUrl:
                     break
                 else:
                     time.sleep(outTime)
                     outTime += 0.5
-            driver.refresh()
+            # todo 先清空拦截数据
+            time.sleep(random.uniform(0, 1))
             # todo 截取数据
-            api_data = _captureAPI(driver)
-            try:
-                reData = api_data['data']['result']['data']
-                return reData
-            except Exception as e:
-                logger.warning(f'获取数据异常 {str(e)} ')
-            return []
+            api_data = _captureAPI(driver, image_url)
+            # todo 恢复网络拦截
+            driver.execute_cdp_cmd('Page.removeScriptToEvaluateOnNewDocument', {
+                'identifier': script_identifier
+            })
+            driver.execute_cdp_cmd('Network.disable', {})
+            return api_data
 
         except Exception as e:
             logger.error(f"1688图片搜索失败: {e}")
+            driver.execute_cdp_cmd('Page.removeScriptToEvaluateOnNewDocument', {
+                'identifier': script_identifier
+            })
+            driver.execute_cdp_cmd('Network.disable', {})
             return []
 
 
@@ -812,20 +816,23 @@ def process_intercepted_data(data):
     """
     sameList = []
     try:
-        requests_json = json.loads(data)
+        requests_json = data
         bbxAsinMetadataList = requests_json['searchResults'][0]['bbxAsinMetadataList']
         for item in bbxAsinMetadataList:
-            sameList.append({
-                'glProductGroup': item['glProductGroup'],
-                'byLine': item['byLine'],
-                'price': item['price'],
-                'listPrice': item['listPrice'],
-                'imageUrl': item['imageUrl'],
-                'asin': item['asin'],
-                'title': item['title'],
-                'averageOverallRating': item['averageOverallRating'],
-                'totalReviewCount': item['totalReviewCount'],
-            })
+            try:
+                sameList.append({
+                    'glProductGroup': item['glProductGroup'],
+                    'byLine': item['byLine'],
+                    'price': item['price'],
+                    'listPrice': item['listPrice'],
+                    'imageUrl': item['imageUrl'],
+                    'asin': item['asin'],
+                    'title': item['title'],
+                    'averageOverallRating': item['averageOverallRating'],
+                    'totalReviewCount': item['totalReviewCount'],
+                })
+            except Exception as e:
+                logger.error(f"{item['asin']}: {e}")
     except Exception as e:
         logger.error(f'❌ JSON解构出错: {e}')
     return sameList
@@ -860,7 +867,7 @@ def _get_marketId(site):
     return marketIdJSON.get(site)
 
 
-def _captureAPI(driver, max_retries=3):
+def _captureAPI(driver, image_url=None, max_retries=3):
     # todo 轮询等待拦截数据
     retry_count = 0
     while retry_count < max_retries:
@@ -879,6 +886,12 @@ def _captureAPI(driver, max_retries=3):
                         driver.execute_script("window.stop()")
                         # 恢复网络拦截 - 关键步骤
                         driver.execute_cdp_cmd('Network.disable', {})
+                        if 'api' in processJSON:
+                            try:
+                                return processJSON['data']['result']['data']
+                            except Exception as e:
+                                logger.warning(f'数据格式不正确, 可能没取到正确数据: {e}')
+                                continue
                         return processJSON
                     except Exception as e:
                         logger.error(f'❌ 响应数据不是Json: {e}')
@@ -889,16 +902,17 @@ def _captureAPI(driver, max_retries=3):
             waited += poll_interval
         retry_count += 1
         logger.info(f'⚠️ 超时：未拦截到 JSON 数据，刷新页面重试（第{retry_count}次）...')
-        driver.refresh()
         # todo 清空拦截数组，防止旧数据影响
         driver.execute_script('window._interceptedStylesnapArr = [];')
+        if image_url is None:
+            driver.refresh()
+        else:
+            driver.refresh()
+            click_to_operate(driver, image_url)
+            driver.implicitly_wait(20)
+            time.sleep(2)
 
     logger.info('⏹️ 多次刷新后仍未拦截到 JSON 数据，停止加载')
-    # 恢复网络拦截 - 关键步骤
-    driver.execute_cdp_cmd('Network.setBlockedURLs', {
-        'urls': []
-    })
-    driver.execute_cdp_cmd('Network.disable', {})
     return {}
 
 
@@ -937,3 +951,55 @@ def fetch_amazon_similar_products(origin, image_url, max_retries=3):
     finally:
         driver.quit()
         logger.info('🔚 浏览器已关闭')
+
+
+
+def update_ranks_sequentially(data_list):
+    """按顺序重新更新 rank 字段"""
+    for index, item in enumerate(data_list, start=1):
+        item['rank'] = index
+    return data_list
+
+def update_database_items(items):
+    newItems = []
+    for item in items:
+        newItem = {}
+        keys_to_delete = [
+            'asin', 'image', 'rank', 'title', 'rating',
+            'reviewCount', 'current_price', 'discount_percentage',
+            'original_price', 'material', 'similarList', 'aliexpress',
+            'description'
+        ]
+        # 1. 先添加要保留的独立字段
+        for key in keys_to_delete:
+            if key in item:
+                newItem[key] = item[key]
+            else:
+                newItem[key] = None  # 或者设置默认值
+        newItem['item'] = json.dumps({k: v for k, v in item.items() if k not in keys_to_delete})
+        newItems.append(newItem)
+    return newItems
+
+
+def click_to_operate(driver, image_url):
+    # todo 点击搜图按钮
+    time.sleep(random.uniform(0, 1))
+    image_button = WebDriverWait(driver, 5).until(
+        EC.element_to_be_clickable((By.XPATH, '//span[contains(text(),"图片链接搜索")]'))
+    )
+    image_button.click()
+    time.sleep(random.uniform(0, 1))
+    # todo 输入图片链接
+    textarea = WebDriverWait(driver, 5).until(
+        EC.element_to_be_clickable((By.XPATH, '//*[@id="rc-tabs-0-panel-imageUrl"]/div/span/textarea'))
+    )
+    textarea.clear()
+    textarea.send_keys(image_url)
+    time.sleep(random.uniform(0, 1))
+    driver.execute_script('window._interceptedStylesnapArr = [];')
+    logger.info('🔄 已清空拦截数组，准备捕获新请求数据')
+    # todo 点击搜索按钮
+    searchButton = WebDriverWait(driver, 5).until(
+        EC.element_to_be_clickable((By.XPATH, '//div[@class="ant-modal-footer"]/span[contains(text(),"确定")]'))
+    )
+    searchButton.click()

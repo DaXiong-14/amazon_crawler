@@ -37,7 +37,7 @@ def background_task(config, task_id):
         for conf in confList:
             try:
                 # todo 在这里执行核心程序
-                category_integration_master(conf.get('cid'), site=conf.get('site'))
+                category_integration_master(conf.get('cid'), site=conf.get('site'), m=False)
                 # todo 执行成功 向服务器发送 结果 进行下一步采集
                 reqJSON = {
                     'cid': conf.get('cid'),

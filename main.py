@@ -1,5 +1,5 @@
 # todo 项目启动类
-
+import json
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
@@ -9,9 +9,9 @@ from datetime import datetime
 import requests
 
 from config.config import flask_host, PORT
-from src.amazon_listing_crawler import crawl_search_results
+from tool.JSONToExcel import AmazonExcelExporter
 from tool.pipeline import toJson
-from tool.utils import _fetch_category_data, ThreadSafeConstant, SeleniumPool, _get_marketId
+from tool.utils import  ThreadSafeConstant, SeleniumPool, _get_marketId
 from src.amazon_category_integration_crawler import category_integration_master
 from src.amazon_selection_crawler import selection_master, selection_slave
 
@@ -145,9 +145,20 @@ def category_integration_start(site="US", method='f'):
 
 
 
-
 if __name__ == '__main__':
     # selection_start()
-    category_integration_start()
+    # category_integration_start(method='f')
+    with open('temp/cn/1981665031_DE.json', 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+    datas = [json.loads(line) for line in lines if line]
+    try:
+        ex = AmazonExcelExporter(filename='temp/df.xlsx', site='DE')
+        ex.create_worksheet("产品数据")
+        for item in datas:
+            ex.add_product_data(item)
+        ex.save()
+        ex.close()
 
+    except Exception as e:
+        logger.error(f'转存成 excel 失败！{e}')
 

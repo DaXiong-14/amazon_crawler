@@ -16,7 +16,6 @@ def queryMaster(cid, site):
     """
     :param cid:
     :param site:
-    :param p:
     :return:
     """
 
@@ -31,24 +30,24 @@ def queryMaster(cid, site):
         'cid': cid,
         'site': site,
     }
-
-    items = selection_slave(conf, json_data)
+    results = [data.updata(data.get('item')).pop('item') for data in json_data]
+    items = selection_slave(conf, results)
 
     # todo 下沉 文件
     fileJSON = os.path.join(os.getcwd(), f'temp\\cn\\{cid}_{site}.json')
     toJson(items, fileJSON, wb="w")
 
-    try:
-        filename = os.path.join(os.getcwd(), f'temp\\cn\\{cid}_{site}.xlsx')
-        ex = AmazonExcelExporter(filename=filename)
-        ex.create_worksheet("产品数据")
-        for item in items:
-            ex.add_product_data(json.loads(item))
-        ex.save()
-        ex.close()
-
-    except Exception as e:
-        logger.error(f'转存成 excel 失败！{e}')
+    # try:
+    #     filename = os.path.join(os.getcwd(), f'temp\\cn\\{cid}_{site}.xlsx')
+    #     ex = AmazonExcelExporter(filename=filename)
+    #     ex.create_worksheet("产品数据")
+    #     for item in items:
+    #         ex.add_product_data(json.loads(item))
+    #     ex.save()
+    #     ex.close()
+    #
+    # except Exception as e:
+    #     logger.error(f'转存成 excel 失败！{e}')
 
 
 

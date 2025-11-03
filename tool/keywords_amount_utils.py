@@ -53,6 +53,7 @@ def export_token(user, password):
         "priority": "u=1, i"
     }
     # 这里直接请求
+    logger.info(f'正在使用账号 {user}')
     response = requests.get(url=url, headers=headers, verify=False)
     try:
         json_data = json.loads(response.text)

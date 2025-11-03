@@ -1,33 +1,41 @@
 import logging
+import os
 import random
 import threading
 import time
+
+import requests
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from bs4 import BeautifulSoup
 
+from config.config import flask_host, PORT
 from src.amazon_selection_crawler import crawl_item_info
-from tool.pipeline import MySQLPipeline
-from tool.utils import _get_site_url, merge_list_of_dicts, SeleniumPool
+from src.search_product import master
+from tool.pipeline import MySQLPipeline, toJson
+from tool.utils import _get_site_url, merge_list_of_dicts, SeleniumPool, update_database_items
 
 logger = logging.getLogger(__name__)
 
 
-def category_integration_master(cid, site):
+def category_integration_master(cid, site, m=True):
     """
     亚马逊 类目综合数据 爬虫主方法
     :param cid: 类目ID
     :param site: 站点
+    :param m: 是否为本地
     """
     logger.info(f'开始爬取类目 {cid} 综合数据...')
     start_time = datetime.now()
 
-    pool = SeleniumPool(pool_size=10, site=site)
+    pool = SeleniumPool(pool_size=8, site=site)
 
     # todo 异步加载
-    items = []
+    items = []  # 处理完成的 items
+    batchItems = [] # 分批次处理 items
     data_lock = threading.Lock()  # 保护结果列表
     stop_event = threading.Event()  # 用于通知所有线程停止
+    SAFE_CONST = ThreadSafeConstant(10)
     # todo 定义一个异步执行方法
     def process_batch_category(c, g, p):
         """
@@ -41,42 +49,85 @@ def category_integration_master(cid, site):
                 return False
             items_json = crawl_category_integration(c, g, p)
             with data_lock:
-                items.extend(items_json.get('items'))
-                pageMax = items_json.get('pageMax')
-                if len(items) >= 500:
-                    # todo 关键达到500条数据，设置停止事件
+                pageItems = items_json.get('items')
+                batchItems.extend(pageItems)
+                maxPage = items_json.get('maxPage')
+                pageIndex = items_json.get('page')
+                if not maxPage is None:
+                    SAFE_CONST.update(maxPage)
+                if pageIndex >= SAFE_CONST.page:
                     stop_event.set()
             return True
         except Exception as e:
             logger.error(f"处理失败: {e}")
             raise  # 重新抛出异常以便主线程捕获
 
-    # todo 使用线程池控制并发数
-    with ThreadPoolExecutor(max_workers=3) as executor:
-        # 提交所有任务
-        futures = []
-        for page in range(1, 50):  # 假设最多爬取100页
-            if stop_event.is_set():
-                logger.info("已达到数据上限，停止提交新任务。")
+    # todo 使用线程池控制并发数 (暂时只能一个 安全 线程)
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        page = 1    # 第一页开始
+        batch_size = 4  # 每批4个线程
+        while page <= 10000:
+            if len(items) > 500:
                 break
-            futures.append(executor.submit(process_batch_category, cid, page, pool))
-            time.sleep(random.uniform(2,5))
-        # 等待所有任务完成并处理异常
-        for future in futures:
-            try:
-                future.result()  # 获取结果（会抛出线程中的异常）
+            # 提交当前批次的4个任务
+            futures = []
+            for _ in range(batch_size):
                 if stop_event.is_set():
-                    logger.info("已达到数据上限，停止等待其他任务。")
-                    executor.shutdown(wait=False)
+                    logger.info("已达到数据上限，停止提交新任务。")
                     break
-            except Exception as e:
-                logger.error(f"任务执行出错: {e}")
+                futures.append(executor.submit(process_batch_category, cid, page, pool))
+                time.sleep(random.uniform(1,2)) # 时间间隔提交
+                page += 1
+            if not futures:  # 如果没有任务可提交，退出循环
+                break
+            # 等待所有任务完成并处理异常
+            for future in futures:
+                try:
+                    future.result()  # 获取结果（会抛出线程中的异常）
+                    if stop_event.is_set():
+                        logger.info("已达到数据上限，停止等待其他任务。")
+                        executor.shutdown(wait=False)
+                        break
+                except Exception as e:
+                    logger.error(f"任务执行出错: {e}")
+
+            if stop_event.is_set():
+                logger.info("停止提交新批次任务")
+                break
+
+            resItems = []  # 批次后端处理的 items
+            if m:
+                resItems = master(site, batchItems)
+            else:
+                try:
+                    logger.info('提交主服务器处理！')
+                    url = f'http://{flask_host.get('master')}:{PORT}/api/{site}/process'
+                    response = requests.post(url, json={'site': site, 'items': batchItems}, timeout=360)
+                    resItems = response.json().get('data')
+                    logger.info('处理完成！')
+                except Exception as e:
+                    logger.error(f'请求数据失败 位置：{cid},页码{str(page)} {e}')
+            if len(items) < 500:
+                items.extend(resItems)
+                batchItems = []
+                continue
+
+
+
     # todo 数据去重 排序 重构
     ranked_items = process_and_rank_items(items)
+
     # todo 获取详细数据
     processed_data = crawl_item_info(ranked_items, pool, site)
+
     # todo 更新items
     reItems = merge_list_of_dicts(ranked_items, processed_data)
+
+    # todo 下沉
+    fileJSON = f"data\\category_integration\\{cid}_{site}.json"
+    toJson(reItems, os.path.join(os.getcwd(), fileJSON))
+
+    reItems = update_database_items(reItems)
 
     # todo 释放浏览器
     pool.close_all()
@@ -86,9 +137,6 @@ def category_integration_master(cid, site):
     time_diff = end_time - start_time
     logger.info(f'类目 {cid} 综合数据抓取完成！总用时: {time_diff.total_seconds()} 秒')
 
-    # todo 下沉
-    # fileJSON = f"data\\category_integration\\{cid}_{site}.json"
-    # toJson(reItems, os.path.join(os.getcwd(), fileJSON))
 
     # todo MySQL 转存
     from config.config import db_config
@@ -109,6 +157,7 @@ def category_integration_master(cid, site):
         "description": "TEXT",
         "similarList": "TEXT",
         'aliexpress': "TEXT",
+        'item': "TEXT",
         "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
         "updated_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
     }
@@ -177,12 +226,13 @@ def crawl_category_integration(cid, page, pool):
             continue
 
     maxPage = None
-    divPageBox = soup.find_all('div', {'aria-label': 'pagination', 'role': 'navigation'})
+    divPageBox = soup.find('div', {'aria-label': 'pagination', 'role': 'navigation'})
     if divPageBox:
-        spanBox = soup.select_one('span.s-pagination-item.s-pagination-disabled')
+        spanBox = divPageBox.find('span', class_='s-pagination-item s-pagination-disabled')
         if spanBox:
             try:
                 maxPage = int(spanBox.get_text(strip=True))
+                print(f'最大页码 {str(maxPage)}')
             except Exception as e:
                 logger.error(f'页码值无效: {e}')
 
@@ -222,3 +272,19 @@ def process_and_rank_items(items):
     return ranked_items
 
 
+class ThreadSafeConstant:
+    """线程安全的 页码 管理器"""
+    def __init__(self, page=None):
+        self._page = page if page else 0
+        self._lock = threading.Lock()
+
+    @property
+    def page(self):
+        with self._lock:
+            return self._page
+
+    def update(self, new_page):
+        if not new_page:  # 检查空值
+            return
+        with self._lock:
+            self._page = new_page
